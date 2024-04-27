@@ -2,12 +2,12 @@ package ru.itone.model.tasks.epic;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 import ru.itone.model.tasks.task.Task;
 import ru.itone.model.user.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Set;
 import java.util.UUID;
@@ -18,7 +18,8 @@ import java.util.UUID;
 @Table(name = "Epics")
 public class Epic {
     @Id
-    @NotNull
+    @Type(type = "org.hibernate.type.UUIDCharType")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @NotBlank(message = "Название не может пыть пустым или состоять только из пробелов.")
@@ -33,6 +34,9 @@ public class Epic {
     @OneToMany(fetch = FetchType.EAGER)
     private Set<Task> tasks;
 
-    @ManyToMany(mappedBy = "epics", fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "Epics_Users",
+            joinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
     private Set<User> users;
 }

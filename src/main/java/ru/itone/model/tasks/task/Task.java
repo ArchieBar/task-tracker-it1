@@ -2,11 +2,9 @@ package ru.itone.model.tasks.task;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
@@ -17,7 +15,8 @@ import java.util.UUID;
 @Table(name = "Tasks")
 public class Task {
     @Id
-    @NotNull
+    @Type(type = "org.hibernate.type.UUIDCharType")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @NotBlank(message = "Описание задачи не может быть пустым или состоять только из пробелов.")
@@ -29,7 +28,6 @@ public class Task {
     private Boolean isCompleted;
 
     public Task(String description) {
-        this.id = UUID.randomUUID();
         this.description = description;
         this.isCompleted = false;
     }
