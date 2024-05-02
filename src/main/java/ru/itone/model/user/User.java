@@ -8,9 +8,7 @@ import ru.itone.model.tasks.epic.Epic;
 import ru.itone.model.user.dto.UserDto;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -19,8 +17,8 @@ import java.util.UUID;
 @Table(name = "Users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Type(type = "org.hibernate.type.UUIDCharType")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private UUID id;
 
@@ -34,17 +32,32 @@ public class User {
     private String email;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "Epics_Users",
+    @JoinTable(
+            name = "Epics_Users",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id"))
-    private Set<Epic> epics;
+            inverseJoinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id")
+    )
+    private List<Epic> epics;
 
+    //TODO
+    // Проверить, может ли случиться NPE
     public User(UserDto userDto) {
         this.firstName = userDto.getFirstName().substring(0, 1).toUpperCase() +
                 userDto.getFirstName().substring(1).toLowerCase();
+
         this.lastName = userDto.getLastName().substring(0, 1).toUpperCase() +
                 userDto.getLastName().substring(1).toLowerCase();
+
         this.email = userDto.getEmail();
-        this.epics = new HashSet<>();
+
+        this.epics = new ArrayList<>();
+    }
+
+    //TODO
+    // Пробросить исключение NPE
+    public void addEpic(Epic epic) {
+        if (epics != null) {
+            epics.add(epic);
+        }
     }
 }

@@ -3,9 +3,12 @@ package ru.itone.model.user;
 import ru.itone.model.tasks.epic.Epic;
 import ru.itone.model.user.dto.UserResponseDto;
 
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserMapper {
+    //TODO
+    // Добавить проброс исключения в случае NPE у полей через блок else
     public static UserResponseDto toUserResponseDto(User user) {
         UserResponseDto userResponseDto = new UserResponseDto();
 
@@ -20,22 +23,19 @@ public class UserMapper {
         }
 
         if (user.getEmail() != null) {
-            String email = user.getEmail();
-            userResponseDto.setEmail(email);
+            userResponseDto.setEmail(user.getEmail());
         }
 
         if (user.getEpics() != null) {
-            Set<Epic> epics = user.getEpics();
-            userResponseDto.setEpics(epics);
+            userResponseDto.setEpics(user.getEpics());
         }
 
         return userResponseDto;
     }
 
-    //FIXME Убрать если не использую
-//    public static List<UserResponseDto> toUserResponseDtoList(List<User> userList) {
-//        return userList.stream()
-//                .map(UserMapper::toUserResponseDto)
-//                .collect(Collectors.toList());
-//    }
+    public static List<UserResponseDto> toUserResponseDtoList(List<User> userList) {
+        return userList.stream()
+                .map(UserMapper::toUserResponseDto)
+                .collect(Collectors.toList());
+    }
 }
