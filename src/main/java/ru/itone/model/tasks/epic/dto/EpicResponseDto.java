@@ -16,6 +16,7 @@ public class EpicResponseDto {
     private UUID id;
     private String name;
     private String description;
+    private String status;
     private List<TaskResponseDto> tasks;
     private List<UserResponseDto> users;
 }

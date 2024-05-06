@@ -27,6 +27,10 @@ public class EpicMapper {
             epicResponseDto.setDescription(epic.getDescription());
         }
 
+        if (epic.getStatus() != null) {
+            epicResponseDto.setStatus(epic.getStatus().name());
+        }
+
         if (epic.getTasks() != null) {
             List<TaskResponseDto> tasks = TaskMapper.toTaskResponseDtoList(epic.getTasks());
             epicResponseDto.setTasks(tasks);

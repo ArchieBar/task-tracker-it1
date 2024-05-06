@@ -1,6 +1,5 @@
 package ru.itone.model.tasks.task;
 
-import ru.itone.model.tasks.task.dto.TaskDto;
 import ru.itone.model.tasks.task.dto.TaskResponseDto;
 
 import java.util.List;

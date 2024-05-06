@@ -1,7 +1,9 @@
 package ru.itone.model;
 
 public interface Marker {
-    interface toCreate{}
+    interface toCreate {
+    }
 
-    interface toUpdate{}
+    interface toUpdate {
+    }
 }

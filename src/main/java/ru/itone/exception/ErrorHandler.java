@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.itone.exception.model.ErrorResponse;
-import ru.itone.exception.user.UserNotFoundByIdException;
+import ru.itone.exception.tasks.epic.EpicByIdNotFoundException;
+import ru.itone.exception.tasks.task.TaskByIdNotFoundException;
+import ru.itone.exception.user.UserByIdNotFoundException;
 
 import javax.validation.ValidationException;
 
@@ -23,7 +25,9 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler({
-            UserNotFoundByIdException.class
+            UserByIdNotFoundException.class,
+            EpicByIdNotFoundException.class,
+            TaskByIdNotFoundException.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     private ErrorResponse objectNotFoundByIdHandler(RuntimeException e) {

@@ -1,6 +1,5 @@
 package ru.itone.model.user;
 
-import ru.itone.model.tasks.epic.Epic;
 import ru.itone.model.user.dto.UserResponseDto;
 
 import java.util.List;

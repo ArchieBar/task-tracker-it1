@@ -4,13 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.itone.model.Marker;
-import ru.itone.model.tasks.task.dto.TaskDto;
-import ru.itone.model.user.dto.UserDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +19,7 @@ public class EpicDto {
     )
     @Pattern(
             groups = {Marker.toCreate.class, Marker.toUpdate.class},
-            regexp = "^[A-Za-zА-ЯЁёа-я]*$",
+            regexp = "^[A-Za-zА-ЯЁёа-я 0-9-]*$",
             message = "Название может содержать только латинские или кириллические символы."
     )
     @Size(
@@ -37,7 +34,7 @@ public class EpicDto {
     )
     @Pattern(
             groups = {Marker.toCreate.class, Marker.toUpdate.class},
-            regexp = "^[A-Za-zА-ЯЁёа-я]*$",
+            regexp = "^[A-Za-zА-ЯЁёа-я 0-9-]*$",
             message = "Описание может содержать только латинские или кириллические символы."
     )
     private String description;

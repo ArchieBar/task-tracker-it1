@@ -2,7 +2,7 @@ package ru.itone.service.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.itone.exception.user.UserNotFoundByIdException;
+import ru.itone.exception.user.UserByIdNotFoundException;
 import ru.itone.model.user.User;
 import ru.itone.model.user.UserMapper;
 import ru.itone.model.user.dto.UserDto;
@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
      * @param userId идентификатор пользователя, которого нужно найти.
      * @return UserResponseDto объект, содержащий информацию о пользователе:
      * {UUID id, String fullName, String email, Set epics}
-     * @throws UserNotFoundByIdException если пользователь с указанным идентификатором не найден.
+     * @throws UserByIdNotFoundException если пользователь с указанным идентификатором не найден.
      *                                   Сообщение: "Пользователь с ID: {0} не найден.". HTTP Code: 404
      */
     @Override
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
         Optional<User> userOptional = userRepository.findById(userId);
 
         if (userOptional.isEmpty()) {
-            throw new UserNotFoundByIdException(userId);
+            throw new UserByIdNotFoundException(userId);
         }
 
         return UserMapper.toUserResponseDto(userOptional.get());
@@ -71,15 +71,15 @@ public class UserServiceImpl implements UserService {
      *                и не равны 'null'.
      * @return UserResponseDto объект, содержащий информацию о пользователе:
      * {UUID id, String fullName, String email, Set epics}
-     * @throws UserNotFoundByIdException если пользователь с указанным идентификатором не найден.
-     * Сообщение: "Пользователь с ID: {0} не найден.". HTTP Code: 40
+     * @throws UserByIdNotFoundException если пользователь с указанным идентификатором не найден.
+     *                                   Сообщение: "Пользователь с ID: {0} не найден.". HTTP Code: 40
      */
     @Override
     public UserResponseDto updateUserById(UUID userId, UserDto userDto) {
         Optional<User> userOptional = userRepository.findById(userId);
 
         if (userOptional.isEmpty()) {
-            throw new UserNotFoundByIdException(userId);
+            throw new UserByIdNotFoundException(userId);
         }
 
         User userUpdate = userOptional.get();

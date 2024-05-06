@@ -8,7 +8,9 @@ import ru.itone.model.tasks.epic.Epic;
 import ru.itone.model.user.dto.UserDto;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor

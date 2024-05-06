@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS Epics_Users;
+DROP TABLE IF EXISTS Epics_Tasks;
 DROP TABLE IF EXISTS Epics;
 DROP TABLE IF EXISTS Tasks;
 DROP TABLE IF EXISTS Users;
@@ -19,12 +20,19 @@ CREATE TABLE IF NOT EXISTS Tasks (
 );
 
 CREATE TABLE IF NOT EXISTS Epics (
-    id VARCHAR(36)  NOT NULL,
+    id VARCHAR(36) NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    task_id VARCHAR(36),
-    CONSTRAINT pk_epic PRIMARY KEY (id),
-    CONSTRAINT fk_task_id FOREIGN KEY (task_id) REFERENCES Tasks(id)
+    status VARCHAR(255) NOT NULL,
+    CONSTRAINT pk_epic PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS Epics_Tasks (
+    epic_id VARCHAR(36) NOT NULL,
+    task_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (epic_id, task_id),
+    FOREIGN KEY (epic_id) REFERENCES Epics(id),
+    FOREIGN KEY (task_id) REFERENCES Tasks(id)
 );
 
 CREATE TABLE IF NOT EXISTS Epics_Users (

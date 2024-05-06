@@ -28,7 +28,16 @@ public class Epic {
     @Column(name = "description")
     private String description;
 
+    @Enumerated
+    @Column(name = "status")
+    private EpicStatus status;
+
     @OneToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "Epics_Tasks",
+            joinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "task_id", referencedColumnName = "id")
+    )
     private List<Task> tasks;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -44,6 +53,7 @@ public class Epic {
     public Epic(EpicDto epicDto) {
         this.name = epicDto.getName();
         this.description = epicDto.getDescription();
+        this.status = EpicStatus.TODO;
         this.tasks = new ArrayList<>();
         this.users = new ArrayList<>();
     }
