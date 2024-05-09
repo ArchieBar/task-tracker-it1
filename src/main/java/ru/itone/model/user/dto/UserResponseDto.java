@@ -2,7 +2,7 @@ package ru.itone.model.user.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.itone.model.tasks.epic.Epic;
+import ru.itone.model.epic.Epic;
 
 import java.util.List;
 import java.util.UUID;

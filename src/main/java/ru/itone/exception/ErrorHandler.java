@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.itone.exception.model.ErrorResponse;
-import ru.itone.exception.tasks.epic.EpicByIdNotFoundException;
-import ru.itone.exception.tasks.task.TaskByIdNotFoundException;
+import ru.itone.exception.epic.EpicByIdNotFoundException;
+import ru.itone.exception.task.TaskByIdNotFoundException;
 import ru.itone.exception.user.UserByIdNotFoundException;
 
 import javax.validation.ValidationException;

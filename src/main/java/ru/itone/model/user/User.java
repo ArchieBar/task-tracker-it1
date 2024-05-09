@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
-import ru.itone.model.tasks.epic.Epic;
+import ru.itone.model.epic.Epic;
 import ru.itone.model.user.dto.UserDto;
 
 import javax.persistence.*;
