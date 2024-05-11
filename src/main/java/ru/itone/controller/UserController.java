@@ -28,7 +28,7 @@ public class UserController {
     @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public UserResponseDto findUserById(@PathVariable("userId") UUID userId) {
-        log.info("Вызов GET-операции: 'user/findUserById'");
+        log.info("Вызов GET-операции: /user/{userId}");
         return userService.findUserById(userId);
     }
 
@@ -36,7 +36,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @Validated({Marker.toCreate.class})
     public UserResponseDto createUser(@RequestBody @Valid UserDto userDto) {
-        log.info("Вызов POST-операции: 'user/createUser/{userId}'");
+        log.info("Вызов POST-операции: /user");
         return userService.createUser(userDto);
     }
 
@@ -45,14 +45,14 @@ public class UserController {
     @Validated({Marker.toUpdate.class})
     public UserResponseDto updateUser(@PathVariable("userId") UUID userId,
                                       @RequestBody @Valid UserDto userDto) {
-        log.info("Вызов PATCH-операции: 'user/updateUser/{userId}'");
+        log.info("Вызов PATCH-операции: /user/{userId}");
         return userService.updateUserById(userId, userDto);
     }
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUserById(@PathVariable("userId") UUID userID) {
-        log.info("Вызов DELETE-операции: user/deleteUser/{userId}");
+        log.info("Вызов DELETE-операции: /user/{userId}");
         userService.deleteUserById(userID);
     }
 }

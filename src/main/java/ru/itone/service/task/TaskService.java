@@ -9,11 +9,11 @@ import java.util.UUID;
 public interface TaskService {
     List<TaskResponseDto> findTasksByEpicId(UUID epicId);
 
-    TaskResponseDto findTaskById(UUID epicId, UUID taskId);
+    TaskResponseDto findTaskById(UUID taskId);
 
     TaskResponseDto createTaskById(UUID epicId, TaskDto taskDto);
 
-    TaskResponseDto updateTaskById(UUID epicId, UUID taskId, TaskDto taskDto);
+    TaskResponseDto updateTaskById(UUID taskId, TaskDto taskDto);
 
     TaskResponseDto updateCompletedTask(UUID epicId, UUID taskId, Boolean completed);
 

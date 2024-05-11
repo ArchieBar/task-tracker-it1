@@ -27,56 +27,52 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    //TODO
-    // Не уверен нужна ли тут пагинация
-    @GetMapping("/{epicId}")
+    @GetMapping("/all/{epicId}")
     @ResponseStatus(HttpStatus.OK)
     public List<TaskResponseDto> findTasksByEpicId(@PathVariable UUID epicId) {
-        log.info("Вызов GET-операции 'task/findTasksByEpicId'");
+        log.info("Вызов GET-операции: task/all/{epicId}");
         return taskService.findTasksByEpicId(epicId);
     }
 
-    @GetMapping("/{epicId}/{taskId}")
+    @GetMapping("/{taskId}")
     @ResponseStatus(HttpStatus.OK)
-    public TaskResponseDto findTaskById(@PathVariable UUID epicId,
-                                        @PathVariable UUID taskId) {
-        log.info("Вызов GET-операции 'task/findTaskById'");
-        return taskService.findTaskById(epicId, taskId);
+    public TaskResponseDto findTaskById(@PathVariable UUID taskId) {
+        log.info("Вызов GET-операции: task/{taskId}");
+        return taskService.findTaskById(taskId);
     }
 
-    @PostMapping("/{epicId}/created")
+    @PostMapping("/{epicId}")
     @ResponseStatus(HttpStatus.CREATED)
     @Validated({Marker.toCreate.class})
     public TaskResponseDto createTaskInEpic(@PathVariable UUID epicId,
                                             @RequestBody @Valid TaskDto taskDto) {
-        log.info("Вызов POST-операции 'task/createTaskInEpic'");
+        log.info("Вызов POST-операции: task/{epicId}");
         return taskService.createTaskById(epicId, taskDto);
     }
 
-    @PatchMapping("/{epicId}/update_task/{taskId}")
+    @PatchMapping("/{taskId}")
     @ResponseStatus(HttpStatus.OK)
     @Validated({Marker.toUpdate.class})
-    public TaskResponseDto updateTaskById(@PathVariable UUID epicId,
-                                          @PathVariable UUID taskId,
+    public TaskResponseDto updateTaskById(@PathVariable UUID taskId,
                                           @RequestBody @Valid TaskDto taskDto) {
-        log.info("Вызов PATCH-операции 'task/updateTaskById'");
-        return taskService.updateTaskById(epicId, taskId, taskDto);
+        log.info("Вызов PATCH-операции: task/{taskId}");
+        return taskService.updateTaskById(taskId, taskDto);
     }
 
-    @PatchMapping("/{epicId}/update_status/{taskId}")
+    @PatchMapping("/{epicId}/{taskId}")
     @ResponseStatus(HttpStatus.OK)
     public TaskResponseDto updateCompletedTask(@PathVariable UUID epicId,
                                                @PathVariable UUID taskId,
-                                               @RequestBody @NotNull Boolean isCompleted) {
-        log.info("Вызов PATCH-операции 'task/updateCompletedTask'");
-        return taskService.updateCompletedTask(epicId, taskId, isCompleted);
+                                               @RequestParam Boolean completed) {
+        log.info("Вызов PATCH-операции: task/{epicId}/{taskId}");
+        return taskService.updateCompletedTask(epicId, taskId, completed);
     }
 
-    @DeleteMapping("/{epicId}/delete/{taskId}")
+    @DeleteMapping("/{epicId}/{taskId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTaskById(@PathVariable UUID epicId,
                                @PathVariable UUID taskId) {
-        log.info("Вызов DELETE-операции 'task/deleteTaskById'");
+        log.info("Вызов DELETE-операции: task/{epicId}/{taskId}");
         taskService.deleteTaskById(epicId, taskId);
     }
 }

@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.UUID;
 
 public interface EpicService {
-    List<EpicResponseDto> findEpics(Pageable pageable);
+    List<EpicResponseDto> findEpicsByBoardId(UUID boarId);
 
     EpicResponseDto findEpicById(UUID epicId);
 
-    EpicResponseDto createEpic(EpicDto epicDto);
+    EpicResponseDto createEpic(UUID boardId, EpicDto epicDto);
 
     EpicResponseDto updateEpicById(UUID epicId, EpicDto epicDto);
 
-    void deleteEpicById(UUID epicId);
+    void deleteEpicById(UUID boardId, UUID epicId);
 }

@@ -48,22 +48,14 @@ public class TaskServiceImpl implements TaskService {
     /**
      * Находит сущность по ID.
      *
-     * @param epicId ID эпика в формате UUID.
      * @param taskId ID задачи в формате UUID.
      * @return DTO объект TaskResponseDto сущности Task.
-     * @throws EpicByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @throws TaskByIdNotFoundException В случае если сущность не найдена.
+     *                                   Сообщение: "Задача с ID: '%s' не найден.". Обработка в ErrorHandler.
      */
     @Override
-    public TaskResponseDto findTaskById(UUID epicId, UUID taskId) {
-        Epic epic = epicRepository.findById(epicId)
-                .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
-
-        List<Task> tasks = epic.getTasks();
-
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
+    public TaskResponseDto findTaskById(UUID taskId) {
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskByIdNotFoundException(taskId));
 
         return TaskMapper.toTaskResponseDto(task);
@@ -100,27 +92,17 @@ public class TaskServiceImpl implements TaskService {
     /**
      * Обновляет существующую сущность на основе DTO объекта.
      *
-     * @param epicId  ID эпика в формате UUID.
      * @param taskId  ID задачи в формате UUID.
      * @param taskDto DTO объект содержащий информацию об обновляемой сущности.
      * @return DTO объект TaskResponseDto обновлённой сущности Task.
-     * @throws EpicByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
      * @throws TaskByIdNotFoundException В случае если сущность не найдена.
      *                                   Сообщение: "Задача с ID: '%s' не найдена.". Обработка в ErrorHandler.
      */
     //TODO
     // Не уверен, что нужно сохранять Эпик с новым значением таски
     @Override
-    public TaskResponseDto updateTaskById(UUID epicId, UUID taskId, TaskDto taskDto) {
-        Epic epic = epicRepository.findById(epicId)
-                .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
-
-        List<Task> tasks = epic.getTasks();
-
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
+    public TaskResponseDto updateTaskById(UUID taskId, TaskDto taskDto) {
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskByIdNotFoundException(taskId));
 
         if (taskDto.getDescription() != null) {
