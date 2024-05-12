@@ -1,7 +1,9 @@
+DROP TABLE IF EXISTS Activity;
 DROP TABLE IF EXISTS Boards_Users;
 DROP TABLE IF EXISTS Boards_Epics;
 DROP TABLE IF EXISTS Epics_Users;
 DROP TABLE IF EXISTS Epics_Tasks;
+DROP TABLE IF EXISTS Comments;
 DROP TABLE IF EXISTS Boards;
 DROP TABLE IF EXISTS Epics;
 DROP TABLE IF EXISTS Tasks;
@@ -25,15 +27,28 @@ CREATE TABLE IF NOT EXISTS Tasks (
 CREATE TABLE IF NOT EXISTS Epics (
     id VARCHAR(36) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    description TEXT,
+    description VARCHAR(1000),
     status VARCHAR(255) NOT NULL,
-    CONSTRAINT pk_epic PRIMARY KEY (id)
+    created_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    author_id VARCHAR(36) NOT NULL,
+    CONSTRAINT pk_epic PRIMARY KEY (id),
+    FOREIGN KEY (author_id) REFERENCES Users(id)
 );
 
 CREATE TABLE IF NOT EXISTS Boards (
     id VARCHAR(36) NOT NULL,
     name VARCHAR(255) NOT NULL UNIQUE,
     CONSTRAINT pk_board PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS Comments (
+    id VARCHAR(36) NOT NULL,
+    text VARCHAR(1000),
+    created_time TIMESTAMP NOT NULL,
+    author_id VARCHAR(36) NOT NULL,
+    CONSTRAINT pk_comment PRIMARY KEY (id),
+    FOREIGN KEY (author_id) REFERENCES Users(id)
 );
 
 CREATE TABLE IF NOT EXISTS Boards_Epics (
@@ -66,4 +81,12 @@ CREATE TABLE IF NOT EXISTS Epics_Users (
     CONSTRAINT pk_epic_user PRIMARY KEY (epic_id, user_id),
     FOREIGN KEY (epic_id) REFERENCES Epics(id),
     FOREIGN KEY (user_id) REFERENCES Users(id)
+);
+
+CREATE TABLE IF NOT EXISTS Activity (
+    epic_id VARCHAR(36) NOT NULL,
+    comment_id VARCHAR(36) NOT NULL,
+    CONSTRAINT pk_activity PRIMARY KEY (epic_id, comment_id),
+    FOREIGN KEY (epic_id) REFERENCES Epics(id),
+    FOREIGN KEY (comment_id) REFERENCES Comments(id)
 );

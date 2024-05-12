@@ -3,6 +3,7 @@ package ru.itone.model.user.dto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.itone.model.epic.Epic;
+import ru.itone.model.epic.dto.EpicResponseDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,13 +14,13 @@ public class UserResponseDto {
     private UUID id;
     private String fullName;
     private String email;
-    private List<Epic> epics;
+    private List<EpicResponseDto> epics;
 
     public UserResponseDto(UUID id,
                            String firstName,
                            String lastName,
                            String email,
-                           List<Epic> epics) {
+                           List<EpicResponseDto> epics) {
         this.id = id;
         this.fullName = String.format("%s %s", firstName, lastName);
         this.email = email;

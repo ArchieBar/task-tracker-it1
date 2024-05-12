@@ -7,6 +7,7 @@ import ru.itone.model.user.UserMapper;
 import ru.itone.model.user.dto.UserResponseDto;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BoardMapper {
@@ -37,7 +38,7 @@ public class BoardMapper {
         return boardResponseDto;
     }
 
-    public static List<BoardResponseDto> toBoardResponseDtoList(List<Board> boards) {
+    public static List<BoardResponseDto> toBoardResponseDtoList(Set<Board> boards) {
         return boards.stream()
                 .map(BoardMapper::toBoardResponseDto)
                 .collect(Collectors.toList());

@@ -7,7 +7,7 @@ import ru.itone.model.user.User;
 import ru.itone.model.user.UserMapper;
 import ru.itone.model.user.dto.UserDto;
 import ru.itone.model.user.dto.UserResponseDto;
-import ru.itone.repository.user.UserRepository;
+import ru.itone.repository.UserRepository;
 
 import java.util.Optional;
 import java.util.UUID;

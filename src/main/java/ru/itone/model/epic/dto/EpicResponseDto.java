@@ -3,10 +3,13 @@ package ru.itone.model.epic.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.itone.model.epic.comment.dto.CommentResponseDto;
 import ru.itone.model.task.dto.TaskResponseDto;
 import ru.itone.model.user.dto.UserResponseDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -17,6 +20,16 @@ public class EpicResponseDto {
     private String name;
     private String description;
     private String status;
+    //TODO
+    // Выводить в формате: дд-мм-гг чч-ММ?
+    // В стринге?
+    private LocalDateTime createdTime;
+    //TODO
+    // Выводить в формате: дд-мм-гг чч-ММ?
+    // В стринге?
+    private LocalDateTime endTime;
+    private UserResponseDto author;
     private List<TaskResponseDto> tasks;
+    private List<CommentResponseDto> activity;
     private List<UserResponseDto> users;
 }

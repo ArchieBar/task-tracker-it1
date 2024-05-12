@@ -8,9 +8,7 @@ import ru.itone.model.epic.Epic;
 import ru.itone.model.user.dto.UserDto;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -39,7 +37,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id")
     )
-    private List<Epic> epics;
+    private Set<Epic> epics;
 
     //TODO
     // Проверить, может ли случиться NPE
@@ -52,13 +50,14 @@ public class User {
 
         this.email = userDto.getEmail();
 
-        this.epics = new ArrayList<>();
+        this.epics = new HashSet<>();
     }
 
-    //TODO
-    // Пробросить исключение NPE
     public void addEpic(Epic epic) {
         if (epics != null) {
+            epics.add(epic);
+        } else {
+            this.epics = new HashSet<>();
             epics.add(epic);
         }
     }

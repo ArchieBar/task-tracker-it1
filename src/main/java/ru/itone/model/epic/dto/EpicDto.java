@@ -5,21 +5,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.itone.model.Marker;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class EpicDto {
-    @NotBlank(
-            groups = {Marker.toCreate.class},
+    @NotNull(
+            groups = Marker.toCreate.class,
             message = "Название не может пыть пустым или состоять только из пробелов."
     )
     @Pattern(
-            groups = {Marker.toCreate.class, Marker.toUpdate.class},
-            regexp = "^[A-Za-zА-ЯЁёа-я 0-9-]*$",
+            regexp = "^(\\s*[A-Za-zА-ЯЁёа-я 0-9-]+\\s*)*$",
             message = "Название может содержать только латинские / кириллические символы, цифры, знаки пробела и дефис."
     )
     @Size(
@@ -28,14 +26,26 @@ public class EpicDto {
     )
     private String name;
 
-    @NotBlank(
-            groups = {Marker.toCreate.class},
+    @NotNull(
+            groups = Marker.toCreate.class,
             message = "Описание не может пыть пустым или состоять только из пробелов."
     )
     @Pattern(
-            groups = {Marker.toCreate.class, Marker.toUpdate.class},
-            regexp = "^[A-Za-zА-ЯЁёа-я 0-9-]*$",
+            regexp = "^(\\s*[A-Za-zА-ЯЁёа-я 0-9-]+\\s*)*$",
             message = "Описание может содержать только латинские / кириллические символы, цифры, знаки пробела и дефис."
     )
+    @Size(
+            max = 1000,
+            message = "Описание эпика не может быть больше 1000 символов."
+    )
     private String description;
+
+    @NotNull(
+            groups = Marker.toCreate.class,
+            message = "Время окончания не может быть null"
+    )
+    @Future(
+            message = "Время окончания задачи не может быть в настоящем или прошлом"
+    )
+    private LocalDateTime endTime;
 }

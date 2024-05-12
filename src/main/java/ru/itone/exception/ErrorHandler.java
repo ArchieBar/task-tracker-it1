@@ -5,9 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.itone.exception.epic.comment.CommentByIdNotFoundException;
 import ru.itone.exception.model.ErrorResponse;
 import ru.itone.exception.epic.EpicByIdNotFoundException;
 import ru.itone.exception.task.TaskByIdNotFoundException;
+import ru.itone.exception.user.UserAccessDeniedException;
 import ru.itone.exception.user.UserByIdNotFoundException;
 
 import javax.validation.ValidationException;
@@ -27,12 +29,22 @@ public class ErrorHandler {
     @ExceptionHandler({
             UserByIdNotFoundException.class,
             EpicByIdNotFoundException.class,
+            CommentByIdNotFoundException.class,
             TaskByIdNotFoundException.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     private ErrorResponse objectNotFoundByIdHandler(RuntimeException e) {
         log.info("Объект не найден: {}", e.getMessage());
         return new ErrorResponse("Объект не найден", e.getMessage());
+    }
+
+    @ExceptionHandler({
+            UserAccessDeniedException.class
+    })
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    private ErrorResponse accessDeniedHandler(RuntimeException e) {
+        log.info("Отказ в доступе: {}", e.getMessage());
+        return new ErrorResponse("Отказ в доступе", e.getMessage());
     }
 
     @ExceptionHandler()

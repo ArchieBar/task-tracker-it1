@@ -1,11 +1,11 @@
-package ru.itone.repository.user;
+package ru.itone.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.itone.model.user.User;
+import ru.itone.model.epic.Epic;
 
 import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface EpicRepository extends JpaRepository<Epic, UUID> {
 }

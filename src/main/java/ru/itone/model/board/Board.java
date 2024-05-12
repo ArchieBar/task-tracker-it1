@@ -9,9 +9,7 @@ import ru.itone.model.epic.Epic;
 import ru.itone.model.user.User;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -32,7 +30,7 @@ public class Board {
             joinColumns = @JoinColumn(name = "board_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id")
     )
-    private List<Epic> epics;
+    private Set<Epic> epics;
 
     @ManyToMany
     @JoinTable(
@@ -40,26 +38,28 @@ public class Board {
             joinColumns = @JoinColumn(name = "board_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id")
     )
-    private List<User> users;
+    private Set<User> users;
 
     public Board(BoardDto dto) {
         this.name = dto.getName();
-        this.epics = new ArrayList<>();
-        this.users = new ArrayList<>();
+        this.epics = new HashSet<>();
+        this.users = new HashSet<>();
     }
 
-    //TODO
-    // Пробросить NPE
     public void addEpic(Epic epic) {
         if (epics != null) {
+            epics.add(epic);
+        } else {
+            this.epics = new HashSet<>();
             epics.add(epic);
         }
     }
 
-    //TODO
-    // Пробросить NPE
     public void addUser(User user) {
         if (users != null) {
+            users.add(user);
+        } else {
+            this.users = new HashSet<>();
             users.add(user);
         }
     }

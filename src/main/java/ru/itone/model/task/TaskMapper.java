@@ -3,6 +3,7 @@ package ru.itone.model.task;
 import ru.itone.model.task.dto.TaskResponseDto;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TaskMapper {
@@ -26,7 +27,7 @@ public class TaskMapper {
         return taskResponseDto;
     }
 
-    public static List<TaskResponseDto> toTaskResponseDtoList(List<Task> tasks) {
+    public static List<TaskResponseDto> toTaskResponseDtoList(Set<Task> tasks) {
         return tasks.stream()
                 .map(TaskMapper::toTaskResponseDto)
                 .collect(Collectors.toList());

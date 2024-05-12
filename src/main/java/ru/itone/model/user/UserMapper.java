@@ -1,8 +1,11 @@
 package ru.itone.model.user;
 
+import ru.itone.model.epic.EpicMapper;
+import ru.itone.model.epic.dto.EpicResponseDto;
 import ru.itone.model.user.dto.UserResponseDto;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class UserMapper {
@@ -26,14 +29,15 @@ public class UserMapper {
         }
 
         if (user.getEpics() != null) {
-            userResponseDto.setEpics(user.getEpics());
+            List<EpicResponseDto> epics = EpicMapper.toEpicResponseDtoList(user.getEpics());
+            userResponseDto.setEpics(epics);
         }
 
         return userResponseDto;
     }
 
-    public static List<UserResponseDto> toUserResponseDtoList(List<User> userList) {
-        return userList.stream()
+    public static List<UserResponseDto> toUserResponseDtoList(Set<User> users) {
+        return users.stream()
                 .map(UserMapper::toUserResponseDto)
                 .collect(Collectors.toList());
     }

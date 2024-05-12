@@ -10,10 +10,11 @@ import ru.itone.model.task.Task;
 import ru.itone.model.task.TaskMapper;
 import ru.itone.model.task.dto.TaskDto;
 import ru.itone.model.task.dto.TaskResponseDto;
-import ru.itone.repository.epic.EpicRepository;
-import ru.itone.repository.task.TaskRepository;
+import ru.itone.repository.EpicRepository;
+import ru.itone.repository.TaskRepository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -40,7 +41,7 @@ public class TaskServiceImpl implements TaskService {
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
-        List<Task> tasks = epic.getTasks();
+        Set<Task> tasks = epic.getTasks();
 
         return TaskMapper.toTaskResponseDtoList(tasks);
     }
@@ -78,7 +79,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = new Task(taskDto);
         task = taskRepository.save(task);
 
-        List<Task> tasks = epic.getTasks();
+        Set<Task> tasks = epic.getTasks();
         tasks.add(task);
 
         epic.setTasks(tasks);
@@ -131,7 +132,7 @@ public class TaskServiceImpl implements TaskService {
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
-        List<Task> tasks = epic.getTasks();
+        Set<Task> tasks = epic.getTasks();
 
         Task task = tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
@@ -167,7 +168,7 @@ public class TaskServiceImpl implements TaskService {
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
-        List<Task> tasks = epic.getTasks();
+        Set<Task> tasks = epic.getTasks();
 
         Task task = tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
@@ -197,7 +198,7 @@ public class TaskServiceImpl implements TaskService {
      */
     //TODO
     // Добавить проверку на NPE
-    private EpicStatus checkStatus(List<Task> tasks) {
+    private EpicStatus checkStatus(Set<Task> tasks) {
         boolean hasTrue = false;
         boolean hasFalse = false;
 

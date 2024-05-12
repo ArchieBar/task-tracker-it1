@@ -10,11 +10,12 @@ import ru.itone.model.board.dto.BoardDto;
 import ru.itone.model.board.dto.BoardResponseDto;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.task.Task;
-import ru.itone.repository.board.BoardRepository;
-import ru.itone.repository.epic.EpicRepository;
-import ru.itone.repository.task.TaskRepository;
+import ru.itone.repository.BoardRepository;
+import ru.itone.repository.EpicRepository;
+import ru.itone.repository.TaskRepository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -40,7 +41,7 @@ public class BoardServiceImpl implements BoardService {
      */
     @Override
     public List<BoardResponseDto> findBoards(Pageable pageable) {
-        List<Board> boards = boardRepository.findAll(pageable).toList();
+        Set<Board> boards = boardRepository.findAll(pageable).toSet();
 
         return BoardMapper.toBoardResponseDtoList(boards);
     }
@@ -109,10 +110,10 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
 
-        List<Epic> epics = board.getEpics();
+        Set<Epic> epics = board.getEpics();
 
         for (Epic epic : epics) {
-            List<Task> tasks = epic.getTasks();
+            Set<Task> tasks = epic.getTasks();
             taskRepository.deleteAll(tasks);
         }
 
