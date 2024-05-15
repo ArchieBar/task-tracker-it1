@@ -1,14 +1,15 @@
 package ru.itone.model.task;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Type;
+import ru.itone.model.epic.Epic;
 import ru.itone.model.task.dto.TaskDto;
 
 import javax.persistence.*;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "Tasks")
@@ -24,10 +25,15 @@ public class Task {
     @Column(name = "is_completed")
     private Boolean isCompleted;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "epic_id", updatable = false)
+    private Epic epic;
+
     //TODO
     // Проверить, может ли случиться NPE
-    public Task(TaskDto taskDto) {
+    public Task(TaskDto taskDto, Epic epic) {
         this.description = taskDto.getDescription();
         this.isCompleted = false;
+        this.epic = epic;
     }
 }

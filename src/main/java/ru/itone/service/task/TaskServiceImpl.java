@@ -4,14 +4,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.itone.exception.epic.EpicByIdNotFoundException;
 import ru.itone.exception.task.TaskByIdNotFoundException;
+import ru.itone.exception.user.UserAccessDeniedException;
+import ru.itone.exception.user.UserByIdNotFoundException;
+import ru.itone.exception.user.UserRightsByUserIdAndBoardIdNotFoundException;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.epic.EpicStatus;
 import ru.itone.model.task.Task;
 import ru.itone.model.task.TaskMapper;
 import ru.itone.model.task.dto.TaskDto;
 import ru.itone.model.task.dto.TaskResponseDto;
+import ru.itone.model.user.Entitlement;
+import ru.itone.model.user.EntitlementEnum;
+import ru.itone.model.user.User;
+import ru.itone.repository.EntitlementRepository;
 import ru.itone.repository.EpicRepository;
 import ru.itone.repository.TaskRepository;
+import ru.itone.repository.UserRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -19,11 +27,18 @@ import java.util.UUID;
 
 @Service
 public class TaskServiceImpl implements TaskService {
+    private final EntitlementRepository entitlementRepository;
+    private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final EpicRepository epicRepository;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository, EpicRepository epicRepository) {
+    public TaskServiceImpl(EntitlementRepository entitlementRepository,
+                           UserRepository userRepository,
+                           TaskRepository taskRepository,
+                           EpicRepository epicRepository) {
+        this.entitlementRepository = entitlementRepository;
+        this.userRepository = userRepository;
         this.taskRepository = taskRepository;
         this.epicRepository = epicRepository;
     }
@@ -72,11 +87,20 @@ public class TaskServiceImpl implements TaskService {
      *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
      */
     @Override
-    public TaskResponseDto createTaskById(UUID epicId, TaskDto taskDto) {
+    public TaskResponseDto createTaskById(UUID userId, UUID epicId, TaskDto taskDto) {
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
-        Task task = new Task(taskDto);
+        UUID boardId = epic.getBoard().getId();
+
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        if (entitlement.getEntitlement().equals(EntitlementEnum.USER)) {
+            throw new UserAccessDeniedException(userId);
+        }
+
+        Task task = new Task(taskDto, epic);
         task = taskRepository.save(task);
 
         Set<Task> tasks = epic.getTasks();
@@ -102,9 +126,18 @@ public class TaskServiceImpl implements TaskService {
     //TODO
     // Не уверен, что нужно сохранять Эпик с новым значением таски
     @Override
-    public TaskResponseDto updateTaskById(UUID taskId, TaskDto taskDto) {
+    public TaskResponseDto updateTaskById(UUID userId, UUID taskId, TaskDto taskDto) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskByIdNotFoundException(taskId));
+
+        UUID boardId = task.getEpic().getBoard().getId();
+
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        if (entitlement.getEntitlement().equals(EntitlementEnum.USER)) {
+            throw new UserAccessDeniedException(userId);
+        }
 
         if (taskDto.getDescription() != null) {
             task.setDescription(taskDto.getDescription());
@@ -128,17 +161,29 @@ public class TaskServiceImpl implements TaskService {
      *                                   Сообщение: "Задача с ID: '%s' не найдена.". Обработка в ErrorHandler.
      */
     @Override
-    public TaskResponseDto updateCompletedTask(UUID epicId, UUID taskId, Boolean completed) {
+    public TaskResponseDto updateCompletedTask(UUID userId, UUID epicId, UUID taskId, Boolean completed) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserByIdNotFoundException(userId));
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskByIdNotFoundException(taskId));
+
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
+        UUID boardId = epic.getBoard().getId();
+
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        EntitlementEnum entitlementEnum = entitlement.getEntitlement();
+
+        if (!epic.getUsers().contains(user) &&
+                (entitlementEnum.equals(EntitlementEnum.USER) || entitlementEnum.equals(EntitlementEnum.EDITOR))) {
+            throw new UserAccessDeniedException(userId);
+        }
+
         Set<Task> tasks = epic.getTasks();
-
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new TaskByIdNotFoundException(taskId));
-
         tasks.remove(task);
 
         task.setIsCompleted(completed);
@@ -164,24 +209,20 @@ public class TaskServiceImpl implements TaskService {
      *                                   Сообщение: "Задача с ID: '%s' не найдена.". Обработка в ErrorHandler.
      */
     @Override
-    public void deleteTaskById(UUID epicId, UUID taskId) {
+    public void deleteTaskById(UUID userId, UUID epicId, UUID taskId) {
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
-        Set<Task> tasks = epic.getTasks();
+        UUID boardId = epic.getBoard().getId();
 
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new TaskByIdNotFoundException(taskId));
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
 
-        tasks.remove(task);
+        if (entitlement.getEntitlement().equals(EntitlementEnum.USER)) {
+            throw new UserAccessDeniedException(userId);
+        }
+
         taskRepository.deleteById(taskId);
-
-        epic.setTasks(tasks);
-        EpicStatus status = checkStatus(tasks);
-        epic.setStatus(status);
-        epicRepository.save(epic);
     }
 
     /**

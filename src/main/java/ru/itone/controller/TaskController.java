@@ -44,35 +44,39 @@ public class TaskController {
     @PostMapping("/{epicId}")
     @ResponseStatus(HttpStatus.CREATED)
     @Validated({Marker.toCreate.class})
-    public TaskResponseDto createTaskInEpic(@PathVariable UUID epicId,
+    public TaskResponseDto createTaskInEpic(@RequestHeader("X-User-Id") UUID userId,
+                                            @PathVariable UUID epicId,
                                             @RequestBody @Valid TaskDto taskDto) {
         log.info("Вызов POST-операции: task/{epicId}");
-        return taskService.createTaskById(epicId, taskDto);
+        return taskService.createTaskById(userId, epicId, taskDto);
     }
 
     @PatchMapping("/{taskId}")
     @ResponseStatus(HttpStatus.OK)
     @Validated({Marker.toUpdate.class})
-    public TaskResponseDto updateTaskById(@PathVariable UUID taskId,
+    public TaskResponseDto updateTaskById(@RequestHeader("X-User-Id") UUID userId,
+                                          @PathVariable UUID taskId,
                                           @RequestBody @Valid TaskDto taskDto) {
         log.info("Вызов PATCH-операции: task/{taskId}");
-        return taskService.updateTaskById(taskId, taskDto);
+        return taskService.updateTaskById(userId, taskId, taskDto);
     }
 
     @PatchMapping("/{epicId}/{taskId}")
     @ResponseStatus(HttpStatus.OK)
-    public TaskResponseDto updateCompletedTask(@PathVariable UUID epicId,
+    public TaskResponseDto updateCompletedTask(@RequestHeader("X-User-Id") UUID userId,
+                                               @PathVariable UUID epicId,
                                                @PathVariable UUID taskId,
                                                @RequestParam Boolean completed) {
         log.info("Вызов PATCH-операции: task/{epicId}/{taskId}");
-        return taskService.updateCompletedTask(epicId, taskId, completed);
+        return taskService.updateCompletedTask(userId, epicId, taskId, completed);
     }
 
     @DeleteMapping("/{epicId}/{taskId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTaskById(@PathVariable UUID epicId,
+    public void deleteTaskById(@RequestHeader("X-User-Id") UUID userId,
+                               @PathVariable UUID epicId,
                                @PathVariable UUID taskId) {
         log.info("Вызов DELETE-операции: task/{epicId}/{taskId}");
-        taskService.deleteTaskById(epicId, taskId);
+        taskService.deleteTaskById(userId, epicId, taskId);
     }
 }

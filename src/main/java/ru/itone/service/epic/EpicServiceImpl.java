@@ -7,6 +7,7 @@ import ru.itone.exception.epic.EpicByIdNotFoundException;
 import ru.itone.exception.epic.comment.CommentByIdNotFoundException;
 import ru.itone.exception.user.UserAccessDeniedException;
 import ru.itone.exception.user.UserByIdNotFoundException;
+import ru.itone.exception.user.UserRightsByUserIdAndBoardIdNotFoundException;
 import ru.itone.model.board.Board;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.epic.EpicMapper;
@@ -17,6 +18,8 @@ import ru.itone.model.epic.comment.dto.CommentResponseDto;
 import ru.itone.model.epic.dto.EpicDto;
 import ru.itone.model.epic.dto.EpicResponseDto;
 import ru.itone.model.task.Task;
+import ru.itone.model.user.Entitlement;
+import ru.itone.model.user.EntitlementEnum;
 import ru.itone.model.user.User;
 import ru.itone.repository.*;
 
@@ -27,6 +30,7 @@ import java.util.UUID;
 @Service
 public class EpicServiceImpl implements EpicService {
     private final UserRepository userRepository;
+    private final EntitlementRepository entitlementRepository;
     private final BoardRepository boardRepository;
     private final EpicRepository epicRepository;
     private final TaskRepository taskRepository;
@@ -34,11 +38,13 @@ public class EpicServiceImpl implements EpicService {
 
     @Autowired
     public EpicServiceImpl(UserRepository userRepository,
+                           EntitlementRepository entitlementRepository,
                            BoardRepository boardRepository,
                            EpicRepository epicRepository,
                            TaskRepository taskRepository,
                            CommentRepository commentRepository) {
         this.userRepository = userRepository;
+        this.entitlementRepository = entitlementRepository;
         this.boardRepository = boardRepository;
         this.epicRepository = epicRepository;
         this.taskRepository = taskRepository;
@@ -97,10 +103,19 @@ public class EpicServiceImpl implements EpicService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserByIdNotFoundException(userId));
 
+        Entitlement entitlement = user.getEntitlements().stream()
+                .filter(e -> e.getBoard().getId().equals(boardId))
+                .findFirst()
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        if (entitlement.getEntitlement().equals(EntitlementEnum.USER)) {
+            throw new UserAccessDeniedException(userId);
+        }
+
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
 
-        Epic epic = new Epic(epicDto, user);
+        Epic epic = new Epic(epicDto, board, user);
         epic = epicRepository.save(epic);
 
         board.addEpic(epic);
@@ -120,7 +135,14 @@ public class EpicServiceImpl implements EpicService {
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
-        Comment comment = new Comment(commentDto, user);
+        UUID boardId = epic.getBoard().getId();
+
+        user.getEntitlements().stream()
+                .filter(e -> e.getBoard().getId().equals(boardId))
+                .findFirst()
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        Comment comment = new Comment(commentDto, user, epic);
         comment = commentRepository.save(comment);
 
         epic.addComment(comment);
@@ -149,6 +171,17 @@ public class EpicServiceImpl implements EpicService {
 
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
+
+        UUID boardId = epic.getBoard().getId();
+
+        Entitlement entitlement = user.getEntitlements().stream()
+                .filter(e -> e.getBoard().getId().equals(boardId))
+                .findFirst()
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        if (entitlement.getEntitlement().equals(EntitlementEnum.USER)) {
+            throw new UserAccessDeniedException(userId);
+        }
 
         if (epicDto.getName() != null) {
             epic.setName(epicDto.getName());
@@ -199,8 +232,12 @@ public class EpicServiceImpl implements EpicService {
     // Удалять эпики могут только редакторы и админы
     @Override
     public void deleteEpicById(UUID userId, UUID boardId, UUID epicId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserByIdNotFoundException(userId));
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        if (entitlement.getEntitlement().equals(EntitlementEnum.USER)) {
+            throw new UserAccessDeniedException(userId);
+        }
 
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
@@ -230,14 +267,21 @@ public class EpicServiceImpl implements EpicService {
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
+        UUID boardId = epic.getBoard().getId();
+
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
         Comment comment = epic.getActivity().stream()
                 .filter(c -> c.getId().equals(commentId))
                 .findFirst()
                 .orElseThrow(() -> new CommentByIdNotFoundException(commentId));
 
-        //TODO
-        // Добавить проверку на права админа, когда добавлю права
-        if (comment.getAuthor() != user) {
+        EntitlementEnum entitlementEnum = entitlement.getEntitlement();
+
+        if (comment.getAuthor().getId() != user.getId()) {
+            throw new UserAccessDeniedException(userId);
+        } else if (entitlementEnum.equals(EntitlementEnum.USER) || entitlementEnum.equals(EntitlementEnum.EDITOR)) {
             throw new UserAccessDeniedException(userId);
         }
 

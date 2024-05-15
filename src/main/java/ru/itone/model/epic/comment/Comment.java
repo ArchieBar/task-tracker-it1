@@ -1,8 +1,8 @@
 package ru.itone.model.epic.comment;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Type;
+import ru.itone.model.epic.Epic;
 import ru.itone.model.epic.comment.dto.CommentDto;
 import ru.itone.model.user.User;
 
@@ -10,7 +10,9 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @Entity
 @Table(name = "Comments")
@@ -30,9 +32,14 @@ public class Comment {
     @JoinColumn(name = "author_id")
     private User author;
 
-    public Comment(CommentDto dto, User author) {
+    @ManyToOne
+    @JoinColumn(name = "epic_id")
+    private Epic epic;
+
+    public Comment(CommentDto dto, User author, Epic epic) {
         this.text = dto.getText();
         this.createdTime = LocalDateTime.now();
         this.author = author;
+        this.epic = epic;
     }
 }

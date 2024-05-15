@@ -1,16 +1,18 @@
 package ru.itone.model.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.*;
 import org.hibernate.annotations.Type;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.user.dto.UserDto;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -31,6 +33,10 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @OneToMany
+    @JoinColumn(name = "user_id")
+    private Set<Entitlement> entitlements;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "Epics_Users",
@@ -49,7 +55,7 @@ public class User {
                 userDto.getLastName().substring(1).toLowerCase();
 
         this.email = userDto.getEmail();
-
+        this.entitlements = new HashSet<>();
         this.epics = new HashSet<>();
     }
 
@@ -59,6 +65,15 @@ public class User {
         } else {
             this.epics = new HashSet<>();
             epics.add(epic);
+        }
+    }
+
+    public void addEntitlement(Entitlement entitlement) {
+        if (entitlements != null) {
+            entitlements.add(entitlement);
+        } else {
+            this.entitlements = new HashSet<>();
+            entitlements.add(entitlement);
         }
     }
 }

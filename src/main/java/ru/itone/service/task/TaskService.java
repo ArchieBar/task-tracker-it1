@@ -11,11 +11,11 @@ public interface TaskService {
 
     TaskResponseDto findTaskById(UUID taskId);
 
-    TaskResponseDto createTaskById(UUID epicId, TaskDto taskDto);
+    TaskResponseDto createTaskById(UUID userId, UUID epicId, TaskDto taskDto);
 
-    TaskResponseDto updateTaskById(UUID taskId, TaskDto taskDto);
+    TaskResponseDto updateTaskById(UUID userId, UUID taskId, TaskDto taskDto);
 
-    TaskResponseDto updateCompletedTask(UUID epicId, UUID taskId, Boolean completed);
+    TaskResponseDto updateCompletedTask(UUID userId, UUID epicId, UUID taskId, Boolean completed);
 
-    void deleteTaskById(UUID epicId, UUID taskId);
+    void deleteTaskById(UUID userId, UUID epicId, UUID taskId);
 }

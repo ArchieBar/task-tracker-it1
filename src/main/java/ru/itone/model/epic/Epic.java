@@ -1,8 +1,8 @@
 package ru.itone.model.epic;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Type;
+import ru.itone.model.board.Board;
 import ru.itone.model.epic.comment.Comment;
 import ru.itone.model.epic.comment.CommentMapper;
 import ru.itone.model.epic.dto.EpicDto;
@@ -13,7 +13,8 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "Epics")
@@ -26,6 +27,7 @@ public class Epic {
     @Column(name = "name")
     private String name;
 
+    @EqualsAndHashCode.Exclude
     @Column(name = "description")
     private String description;
 
@@ -39,24 +41,20 @@ public class Epic {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "board_id")
+    private Board board;
+
     @OneToOne(fetch =  FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private User author;
 
     @OneToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "Epics_Tasks",
-            joinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "task_id", referencedColumnName = "id")
-    )
+    @JoinColumn(name = "epic_id", updatable = false)
     private Set<Task> tasks;
 
     @OneToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "Activity",
-            joinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "comment_id", referencedColumnName = "id")
-    )
+    @JoinColumn(name = "epic_id", updatable = false)
     private List<Comment> activity;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -69,12 +67,13 @@ public class Epic {
 
     //TODO
     // Проверить, может ли случиться NPE
-    public Epic(EpicDto dto, User author) {
+    public Epic(EpicDto dto, Board board, User author) {
         this.name = dto.getName();
         this.description = dto.getDescription();
         this.status = EpicStatus.TODO;
         this.createdTime = LocalDateTime.now();
         this.endTime = dto.getEndTime();
+        this.board = board;
         this.author = author;
         this.tasks = new HashSet<>();
         this.activity = new ArrayList<>();

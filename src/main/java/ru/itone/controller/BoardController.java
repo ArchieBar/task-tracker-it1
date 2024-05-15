@@ -51,24 +51,27 @@ public class BoardController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated({Marker.toCreate.class})
-    public BoardResponseDto createBoard(@RequestBody @Valid BoardDto boardDto) {
+    public BoardResponseDto createBoard(@RequestHeader("X-User-Id") UUID userId,
+                                        @RequestBody @Valid BoardDto boardDto) {
         log.info("Вызов POST-операции: /board");
-        return boardService.createBoard(boardDto);
+        return boardService.createBoard(userId, boardDto);
     }
 
     @PatchMapping("/{boardId}")
     @ResponseStatus(HttpStatus.OK)
     @Validated({Marker.toUpdate.class})
-    public BoardResponseDto updateBoardById(@PathVariable UUID boardId,
+    public BoardResponseDto updateBoardById(@RequestHeader("X-User-Id") UUID userId,
+                                            @PathVariable UUID boardId,
                                             @RequestBody @Valid BoardDto boardDto) {
         log.info("Вызов PATCH-операции: /board/{boardId}");
-        return boardService.updateBoardById(boardId, boardDto);
+        return boardService.updateBoardById(userId, boardId, boardDto);
     }
 
     @DeleteMapping("/{boardId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteBoardById(@PathVariable UUID boardId) {
+    public void deleteBoardById(@RequestHeader("X-User-Id") UUID userId,
+                                @PathVariable UUID boardId) {
         log.info("Вызов DELETE-операции: /board/{boardId}");
-        boardService.deleteBoardById(boardId);
+        boardService.deleteBoardById(userId ,boardId);
     }
 }

@@ -8,7 +8,6 @@ import ru.itone.model.Marker;
 import javax.validation.constraints.*;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
     @NotNull(

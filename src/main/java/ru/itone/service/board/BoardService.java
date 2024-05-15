@@ -12,9 +12,9 @@ public interface BoardService {
 
     BoardResponseDto findBoardById(UUID boardId);
 
-    BoardResponseDto createBoard(BoardDto boardDto);
+    BoardResponseDto createBoard(UUID userId, BoardDto boardDto);
 
-    BoardResponseDto updateBoardById(UUID boardId, BoardDto boardDto);
+    BoardResponseDto updateBoardById(UUID userId, UUID boardId, BoardDto boardDto);
 
-    void deleteBoardById(UUID boardId);
+    void deleteBoardById(UUID userId, UUID boardId);
 }

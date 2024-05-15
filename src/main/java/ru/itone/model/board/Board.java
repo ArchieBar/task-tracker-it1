@@ -1,8 +1,6 @@
 package ru.itone.model.board;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Type;
 import ru.itone.model.board.dto.BoardDto;
 import ru.itone.model.epic.Epic;
@@ -11,7 +9,8 @@ import ru.itone.model.user.User;
 import javax.persistence.*;
 import java.util.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "Boards")
@@ -25,11 +24,7 @@ public class Board {
     private String name;
 
     @OneToMany
-    @JoinTable(
-            name = "Boards_Epics",
-            joinColumns = @JoinColumn(name = "board_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "epic_id", referencedColumnName = "id")
-    )
+    @JoinColumn(name = "board_id", updatable = false)
     private Set<Epic> epics;
 
     @ManyToMany

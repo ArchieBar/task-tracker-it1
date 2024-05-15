@@ -4,15 +4,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.itone.exception.board.BoardNotFoundByIdException;
+import ru.itone.exception.user.UserAccessDeniedException;
+import ru.itone.exception.user.UserByIdNotFoundException;
+import ru.itone.exception.user.UserRightsByUserIdAndBoardIdNotFoundException;
 import ru.itone.model.board.Board;
 import ru.itone.model.board.BoardMapper;
 import ru.itone.model.board.dto.BoardDto;
 import ru.itone.model.board.dto.BoardResponseDto;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.task.Task;
-import ru.itone.repository.BoardRepository;
-import ru.itone.repository.EpicRepository;
-import ru.itone.repository.TaskRepository;
+import ru.itone.model.user.Entitlement;
+import ru.itone.model.user.EntitlementEnum;
+import ru.itone.model.user.User;
+import ru.itone.repository.*;
 
 import java.util.List;
 import java.util.Set;
@@ -20,14 +24,20 @@ import java.util.UUID;
 
 @Service
 public class BoardServiceImpl implements BoardService {
+    private final UserRepository userRepository;
+    private final EntitlementRepository entitlementRepository;
     private final BoardRepository boardRepository;
     private final EpicRepository epicRepository;
     private final TaskRepository taskRepository;
 
     @Autowired
-    public BoardServiceImpl(BoardRepository boardRepository,
+    public BoardServiceImpl(UserRepository userRepository,
+                            EntitlementRepository entitlementRepository,
+                            BoardRepository boardRepository,
                             EpicRepository epicRepository,
                             TaskRepository taskRepository) {
+        this.userRepository = userRepository;
+        this.entitlementRepository = entitlementRepository;
         this.boardRepository = boardRepository;
         this.epicRepository = epicRepository;
         this.taskRepository = taskRepository;
@@ -69,10 +79,21 @@ public class BoardServiceImpl implements BoardService {
      * @return DTO объект BoardResponseDto новой сущности Board.
      */
     @Override
-    public BoardResponseDto createBoard(BoardDto boardDto) {
-        Board board = new Board(boardDto);
+    public BoardResponseDto createBoard(UUID userId, BoardDto boardDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserByIdNotFoundException(userId));
 
-        return BoardMapper.toBoardResponseDto(boardRepository.save(board));
+        Board board = new Board(boardDto);
+        board.addUser(user);
+        board = boardRepository.save(board);
+
+        Entitlement newEntitlement = new Entitlement(board, user, EntitlementEnum.OWNER);
+        newEntitlement = entitlementRepository.save(newEntitlement);
+
+        user.addEntitlement(newEntitlement);
+        userRepository.save(user);
+
+        return BoardMapper.toBoardResponseDto(board);
     }
 
     /**
@@ -85,7 +106,14 @@ public class BoardServiceImpl implements BoardService {
      *                                    Сообщение: "Доска задач с ID: '%s' не найден.". Обработка в ErrorHandler.
      */
     @Override
-    public BoardResponseDto updateBoardById(UUID boardId, BoardDto boardDto) {
+    public BoardResponseDto updateBoardById(UUID userId, UUID boardId, BoardDto boardDto) {
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        if (!entitlement.getEntitlement().equals(EntitlementEnum.OWNER)) {
+            throw new UserAccessDeniedException(userId);
+        }
+
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
 
@@ -106,7 +134,14 @@ public class BoardServiceImpl implements BoardService {
      *                                    Сообщение: "Доска задач с ID: '%s' не найден.". Обработка в ErrorHandler.
      */
     @Override
-    public void deleteBoardById(UUID boardId) {
+    public void deleteBoardById(UUID userId, UUID boardId) {
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        if (!entitlement.getEntitlement().equals(EntitlementEnum.OWNER)) {
+            throw new UserAccessDeniedException(userId);
+        }
+
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
 
@@ -117,6 +152,7 @@ public class BoardServiceImpl implements BoardService {
             taskRepository.deleteAll(tasks);
         }
 
+        entitlementRepository.deleteAllByBoardId(boardId);
         epicRepository.deleteAll(epics);
         boardRepository.deleteById(boardId);
     }

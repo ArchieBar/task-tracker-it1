@@ -11,6 +11,7 @@ import ru.itone.exception.epic.EpicByIdNotFoundException;
 import ru.itone.exception.task.TaskByIdNotFoundException;
 import ru.itone.exception.user.UserAccessDeniedException;
 import ru.itone.exception.user.UserByIdNotFoundException;
+import ru.itone.exception.user.UserRightsByUserIdAndBoardIdNotFoundException;
 
 import javax.validation.ValidationException;
 
@@ -39,7 +40,8 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler({
-            UserAccessDeniedException.class
+            UserAccessDeniedException.class,
+            UserRightsByUserIdAndBoardIdNotFoundException.class
     })
     @ResponseStatus(HttpStatus.FORBIDDEN)
     private ErrorResponse accessDeniedHandler(RuntimeException e) {
