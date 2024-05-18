@@ -1,6 +1,6 @@
 package ru.itone.service.user;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.itone.exception.user.UserByEmailNotFoundException;
 import ru.itone.exception.user.UserByIdNotFoundException;
@@ -15,17 +15,12 @@ import ru.itone.model.user.dto.UserResponseDto;
 import ru.itone.repository.UserRepository;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     /**
      * Находит пользователя по его идентификатору.
@@ -37,14 +32,11 @@ public class UserServiceImpl implements UserService {
      *                                   Сообщение: "Пользователь с ID: {0} не найден.". HTTP Code: 404
      */
     @Override
-    public UserResponseDto findUserById(UUID userId, UUID searchUserId) {
-        Optional<User> userOptional = userRepository.findById(searchUserId);
+    public UserResponseDto findUserById(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserByIdNotFoundException(userId));
 
-        if (userOptional.isEmpty()) {
-            throw new UserByIdNotFoundException(searchUserId);
-        }
-
-        return UserMapper.toUserResponseDto(userOptional.get());
+        return UserMapper.toUserResponseDto(user);
     }
 
 
@@ -112,13 +104,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponseDto updateUserById(UUID userId, UserDto userDto) {
-        Optional<User> userOptional = userRepository.findById(userId);
-
-        if (userOptional.isEmpty()) {
-            throw new UserByIdNotFoundException(userId);
-        }
-
-        User userUpdate = userOptional.get();
+        User userUpdate = userRepository.findById(userId).
+                orElseThrow(() -> new UserByIdNotFoundException(userId));
 
         if (userDto.getFirstName() != null) {
             userUpdate.setFirstName(userDto.getFirstName());

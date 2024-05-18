@@ -14,9 +14,6 @@ import java.util.UUID;
 public class CommentResponseDto {
     private UUID id;
     private String text;
-    //TODO
-    // Выводить в формате: дд-мм-гг чч-ММ?
-    // В стринге?
     private LocalDateTime createdTime;
     private UserResponseDto author;
 }

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class EpicMapper {
     //TODO
-    // Добавить проброс исключения в случае NPE у полей через блок else
+    // Пробросить NPE?
     public static EpicResponseDto toEpicResponseDto(Epic epic) {
         EpicResponseDto epicResponseDto = new EpicResponseDto();
 

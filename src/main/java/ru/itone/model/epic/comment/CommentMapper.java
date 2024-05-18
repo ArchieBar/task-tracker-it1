@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class CommentMapper {
     //TODO
-    // Пробросить NPE
+    // Пробросить NPE?
     public static CommentResponseDto toCommentResponseDto(Comment comment) {
         CommentResponseDto commentResponseDto = new CommentResponseDto();
 
@@ -21,8 +21,6 @@ public class CommentMapper {
             commentResponseDto.setText(comment.getText());
         }
 
-        //TODO
-        // Выводить в формате: дд-мм-гг чч-ММ?
         if (comment.getCreatedTime() != null) {
             commentResponseDto.setCreatedTime(comment.getCreatedTime());
         }

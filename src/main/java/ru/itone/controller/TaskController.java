@@ -1,7 +1,7 @@
 package ru.itone.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +18,9 @@ import java.util.UUID;
 @Validated
 @RestController
 @RequestMapping("/task")
+@RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
-
-    @Autowired
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
 
     @GetMapping("/all/{epicId}")
     @ResponseStatus(HttpStatus.OK)

@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class UserMapper {
     //TODO
-    // Добавить проброс исключения в случае NPE у полей через блок else
+    // Пробросить NPE?
     public static UserResponseDto toUserResponseDto(User user) {
         UserResponseDto userResponseDto = new UserResponseDto();
 

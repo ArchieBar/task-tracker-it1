@@ -1,6 +1,6 @@
 package ru.itone.service.board;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.itone.exception.board.BoardNotFoundByIdException;
@@ -23,25 +23,13 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
     private final UserRepository userRepository;
     private final EntitlementRepository entitlementRepository;
     private final BoardRepository boardRepository;
     private final EpicRepository epicRepository;
     private final TaskRepository taskRepository;
-
-    @Autowired
-    public BoardServiceImpl(UserRepository userRepository,
-                            EntitlementRepository entitlementRepository,
-                            BoardRepository boardRepository,
-                            EpicRepository epicRepository,
-                            TaskRepository taskRepository) {
-        this.userRepository = userRepository;
-        this.entitlementRepository = entitlementRepository;
-        this.boardRepository = boardRepository;
-        this.epicRepository = epicRepository;
-        this.taskRepository = taskRepository;
-    }
 
     /**
      * Возвращает все Доски задач постранично используя Pageable.

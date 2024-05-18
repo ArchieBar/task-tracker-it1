@@ -1,6 +1,6 @@
 package ru.itone.service.task;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.itone.exception.epic.EpicByIdNotFoundException;
 import ru.itone.exception.task.TaskByIdNotFoundException;
@@ -26,22 +26,12 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
     private final EntitlementRepository entitlementRepository;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final EpicRepository epicRepository;
-
-    @Autowired
-    public TaskServiceImpl(EntitlementRepository entitlementRepository,
-                           UserRepository userRepository,
-                           TaskRepository taskRepository,
-                           EpicRepository epicRepository) {
-        this.entitlementRepository = entitlementRepository;
-        this.userRepository = userRepository;
-        this.taskRepository = taskRepository;
-        this.epicRepository = epicRepository;
-    }
 
     /**
      * Находит список задач по ID эпика.
@@ -123,8 +113,6 @@ public class TaskServiceImpl implements TaskService {
      * @throws TaskByIdNotFoundException В случае если сущность не найдена.
      *                                   Сообщение: "Задача с ID: '%s' не найдена.". Обработка в ErrorHandler.
      */
-    //TODO
-    // Не уверен, что нужно сохранять Эпик с новым значением таски
     @Override
     public TaskResponseDto updateTaskById(UUID userId, UUID taskId, TaskDto taskDto) {
         Task task = taskRepository.findById(taskId)
@@ -237,9 +225,11 @@ public class TaskServiceImpl implements TaskService {
      * @param tasks Список задач Эпика.
      * @return Enum статус задачи эпика. Он может быть равен: .TODO, .DONE, .DOING.
      */
-    //TODO
-    // Добавить проверку на NPE
     private EpicStatus checkStatus(Set<Task> tasks) {
+        if (tasks == null) {
+            return EpicStatus.TODO;
+        }
+
         boolean hasTrue = false;
         boolean hasFalse = false;
 

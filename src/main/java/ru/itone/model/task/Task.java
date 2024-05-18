@@ -32,7 +32,7 @@ public class Task {
     private Epic epic;
 
     //TODO
-    // Проверить, может ли случиться NPE
+    // Пробросить NPE?
     public Task(TaskDto taskDto, Epic epic) {
         this.description = taskDto.getDescription();
         this.isCompleted = false;

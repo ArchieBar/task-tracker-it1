@@ -1,6 +1,6 @@
 package ru.itone.service.epic;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.itone.exception.board.BoardNotFoundByIdException;
 import ru.itone.exception.epic.EpicByIdNotFoundException;
@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class EpicServiceImpl implements EpicService {
     private final UserRepository userRepository;
     private final EntitlementRepository entitlementRepository;
@@ -35,21 +36,6 @@ public class EpicServiceImpl implements EpicService {
     private final EpicRepository epicRepository;
     private final TaskRepository taskRepository;
     private final CommentRepository commentRepository;
-
-    @Autowired
-    public EpicServiceImpl(UserRepository userRepository,
-                           EntitlementRepository entitlementRepository,
-                           BoardRepository boardRepository,
-                           EpicRepository epicRepository,
-                           TaskRepository taskRepository,
-                           CommentRepository commentRepository) {
-        this.userRepository = userRepository;
-        this.entitlementRepository = entitlementRepository;
-        this.boardRepository = boardRepository;
-        this.epicRepository = epicRepository;
-        this.taskRepository = taskRepository;
-        this.commentRepository = commentRepository;
-    }
 
     /**
      * Возвращает все Эпики одной доски по Id постранично используя Pageable.
@@ -94,10 +80,6 @@ public class EpicServiceImpl implements EpicService {
      * @throws BoardNotFoundByIdException В случае если сущность не найдена.
      *                                    Сообщение: "Доска задач с ID: '%s' не найдена.". Обработка в ErrorHandler.
      */
-
-    //TODO
-    // Добавить проверку прав доступа
-    // Создавать эпики могут только редакторы и админы
     @Override
     public EpicResponseDto createEpic(UUID userId, UUID boardId, EpicDto epicDto) {
         User user = userRepository.findById(userId)
@@ -160,10 +142,6 @@ public class EpicServiceImpl implements EpicService {
      * @throws EpicByIdNotFoundException В случае если сущность не найдена.
      *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
      */
-
-    //TODO
-    // Добавить проверку прав доступа
-    // Обновлять эпики будет только редакторы и админы
     @Override
     public EpicResponseDto updateEpicById(UUID userId, UUID epicId, EpicDto epicDto) {
         User user = userRepository.findById(userId)
@@ -226,10 +204,6 @@ public class EpicServiceImpl implements EpicService {
     //TODO
     // это можно сделать через каскадные операции,
     // изучить и применить
-
-    //TODO
-    // Добавить проверку прав доступа
-    // Удалять эпики могут только редакторы и админы
     @Override
     public void deleteEpicById(UUID userId, UUID boardId, UUID epicId) {
         Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
@@ -256,9 +230,6 @@ public class EpicServiceImpl implements EpicService {
         epicRepository.deleteById(epicId);
     }
 
-    //TODO
-    // Добавить проверку прав доступа
-    // Удалять комментарии могут только авторы комментариев и админы
     @Override
     public void deleteCommentById(UUID userId, UUID epicId, UUID commentId) {
         User user = userRepository.findById(userId)
@@ -279,9 +250,9 @@ public class EpicServiceImpl implements EpicService {
 
         EntitlementEnum entitlementEnum = entitlement.getEntitlement();
 
-        if (comment.getAuthor().getId() != user.getId()) {
-            throw new UserAccessDeniedException(userId);
-        } else if (entitlementEnum.equals(EntitlementEnum.USER) || entitlementEnum.equals(EntitlementEnum.EDITOR)) {
+
+        if (comment.getAuthor().getId() != user.getId() &&
+                (entitlementEnum.equals(EntitlementEnum.USER) || entitlementEnum.equals(EntitlementEnum.EDITOR))) {
             throw new UserAccessDeniedException(userId);
         }
 

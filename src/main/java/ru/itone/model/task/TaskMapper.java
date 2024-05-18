@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class TaskMapper {
     //TODO
-    // Добавить проброс исключения в случае NPE у полей через блок else
+    // Пробросить NPE?
     public static TaskResponseDto toTaskResponseDto(Task task) {
         TaskResponseDto taskResponseDto = new TaskResponseDto();
 

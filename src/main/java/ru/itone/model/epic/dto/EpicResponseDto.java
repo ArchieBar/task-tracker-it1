@@ -19,13 +19,7 @@ public class EpicResponseDto {
     private String name;
     private String description;
     private String status;
-    //TODO
-    // Выводить в формате: дд-мм-гг чч-ММ?
-    // В стринге?
     private LocalDateTime createdTime;
-    //TODO
-    // Выводить в формате: дд-мм-гг чч-ММ?
-    // В стринге?
     private LocalDateTime endTime;
     private UserResponseDto author;
     private List<TaskResponseDto> tasks;

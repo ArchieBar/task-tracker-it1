@@ -54,8 +54,6 @@ public class User {
     )
     private Set<Epic> epics;
 
-    //TODO
-    // Проверить, может ли случиться NPE
     public User(UserDto userDto) {
         this.firstName = userDto.getFirstName().substring(0, 1).toUpperCase() +
                 userDto.getFirstName().substring(1).toLowerCase();
@@ -80,15 +78,6 @@ public class User {
         this.logon = true;
         this.entitlements = new HashSet<>();
         this.epics = new HashSet<>();
-    }
-
-    public void addEpic(Epic epic) {
-        if (epics != null) {
-            epics.add(epic);
-        } else {
-            this.epics = new HashSet<>();
-            epics.add(epic);
-        }
     }
 
     public void addEntitlement(Entitlement entitlement) {

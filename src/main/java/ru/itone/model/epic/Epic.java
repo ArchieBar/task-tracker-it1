@@ -67,8 +67,6 @@ public class Epic {
     )
     private Set<User> users;
 
-    //TODO
-    // Проверить, может ли случиться NPE
     public Epic(EpicDto dto, Board board, User author) {
         this.name = dto.getName();
         this.description = dto.getDescription();
@@ -82,30 +80,12 @@ public class Epic {
         this.users = new HashSet<>();
     }
 
-    public void addTask(Task task) {
-        if (tasks != null) {
-            tasks.add(task);
-        } else {
-            this.tasks = new HashSet<>();
-            tasks.add(task);
-        }
-    }
-
     public void addComment(Comment comment) {
         if (activity != null) {
             activity.add(comment);
         } else {
             this.activity = new ArrayList<>();
             activity.add(comment);
-        }
-    }
-
-    public void addUser(User user) {
-        if (users != null) {
-            users.add(user);
-        } else {
-            this.users = new HashSet<>();
-            users.add(user);
         }
     }
 }

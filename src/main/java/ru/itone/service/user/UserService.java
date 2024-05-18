@@ -8,7 +8,7 @@ import ru.itone.model.user.dto.UserResponseDto;
 import java.util.UUID;
 
 public interface UserService {
-    UserResponseDto findUserById(UUID userId, UUID searchUserId);
+    UserResponseDto findUserById(UUID userId);
 
     UserResponseDto registerUser(RegisterFormDto dto);
 
