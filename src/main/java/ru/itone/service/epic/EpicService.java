@@ -1,6 +1,5 @@
 package ru.itone.service.epic;
 
-import org.springframework.data.domain.Pageable;
 import ru.itone.model.epic.comment.dto.CommentDto;
 import ru.itone.model.epic.comment.dto.CommentResponseDto;
 import ru.itone.model.epic.dto.EpicDto;

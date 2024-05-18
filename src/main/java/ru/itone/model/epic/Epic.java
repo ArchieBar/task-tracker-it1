@@ -1,10 +1,12 @@
 package ru.itone.model.epic;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import ru.itone.model.board.Board;
 import ru.itone.model.epic.comment.Comment;
-import ru.itone.model.epic.comment.CommentMapper;
 import ru.itone.model.epic.dto.EpicDto;
 import ru.itone.model.task.Task;
 import ru.itone.model.user.User;
@@ -45,7 +47,7 @@ public class Epic {
     @JoinColumn(name = "board_id")
     private Board board;
 
-    @OneToOne(fetch =  FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private User author;
 

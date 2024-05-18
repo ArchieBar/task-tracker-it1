@@ -5,13 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.itone.exception.epic.comment.CommentByIdNotFoundException;
-import ru.itone.exception.model.ErrorResponse;
 import ru.itone.exception.epic.EpicByIdNotFoundException;
+import ru.itone.exception.epic.comment.CommentByIdNotFoundException;
+import ru.itone.exception.http.HttpHeaderNotFoundException;
+import ru.itone.exception.model.ErrorResponse;
 import ru.itone.exception.task.TaskByIdNotFoundException;
-import ru.itone.exception.user.UserAccessDeniedException;
-import ru.itone.exception.user.UserByIdNotFoundException;
-import ru.itone.exception.user.UserRightsByUserIdAndBoardIdNotFoundException;
+import ru.itone.exception.user.*;
 
 import javax.validation.ValidationException;
 
@@ -28,7 +27,18 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler({
+            UserLoginHasBeenCompletedException.class,
+            HttpHeaderNotFoundException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse badRequestHandler(RuntimeException e) {
+        log.info("Ошибка некорректного запроса: {}", e.getMessage());
+        return new ErrorResponse("Некорректный запрос", e.getMessage());
+    }
+
+    @ExceptionHandler({
             UserByIdNotFoundException.class,
+            UserByEmailNotFoundException.class,
             EpicByIdNotFoundException.class,
             CommentByIdNotFoundException.class,
             TaskByIdNotFoundException.class
@@ -41,7 +51,9 @@ public class ErrorHandler {
 
     @ExceptionHandler({
             UserAccessDeniedException.class,
-            UserRightsByUserIdAndBoardIdNotFoundException.class
+            UserRightsByUserIdAndBoardIdNotFoundException.class,
+            UserInvalidPassword.class,
+            UserLoginHasBeenNotCompletedException.class
     })
     @ResponseStatus(HttpStatus.FORBIDDEN)
     private ErrorResponse accessDeniedHandler(RuntimeException e) {

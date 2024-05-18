@@ -1,6 +1,8 @@
 package ru.itone.model.task;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.task.dto.TaskDto;

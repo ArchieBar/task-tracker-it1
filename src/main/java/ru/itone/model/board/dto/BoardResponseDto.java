@@ -7,7 +7,6 @@ import ru.itone.model.epic.dto.EpicResponseDto;
 import ru.itone.model.user.dto.UserResponseDto;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Data

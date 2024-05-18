@@ -72,6 +72,6 @@ public class BoardController {
     public void deleteBoardById(@RequestHeader("X-User-Id") UUID userId,
                                 @PathVariable UUID boardId) {
         log.info("Вызов DELETE-операции: /board/{boardId}");
-        boardService.deleteBoardById(userId ,boardId);
+        boardService.deleteBoardById(userId, boardId);
     }
 }

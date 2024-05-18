@@ -4,7 +4,6 @@ import ru.itone.model.epic.comment.dto.CommentResponseDto;
 import ru.itone.model.user.UserMapper;
 import ru.itone.model.user.dto.UserResponseDto;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 

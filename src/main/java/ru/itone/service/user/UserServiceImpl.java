@@ -2,13 +2,19 @@ package ru.itone.service.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.itone.exception.user.UserByEmailNotFoundException;
 import ru.itone.exception.user.UserByIdNotFoundException;
+import ru.itone.exception.user.UserInvalidPassword;
+import ru.itone.exception.user.UserLoginHasBeenCompletedException;
 import ru.itone.model.user.User;
 import ru.itone.model.user.UserMapper;
+import ru.itone.model.user.dto.LoginFormDto;
+import ru.itone.model.user.dto.RegisterFormDto;
 import ru.itone.model.user.dto.UserDto;
 import ru.itone.model.user.dto.UserResponseDto;
 import ru.itone.repository.UserRepository;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,11 +37,11 @@ public class UserServiceImpl implements UserService {
      *                                   Сообщение: "Пользователь с ID: {0} не найден.". HTTP Code: 404
      */
     @Override
-    public UserResponseDto findUserById(UUID userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
+    public UserResponseDto findUserById(UUID userId, UUID searchUserId) {
+        Optional<User> userOptional = userRepository.findById(searchUserId);
 
         if (userOptional.isEmpty()) {
-            throw new UserByIdNotFoundException(userId);
+            throw new UserByIdNotFoundException(searchUserId);
         }
 
         return UserMapper.toUserResponseDto(userOptional.get());
@@ -45,15 +51,45 @@ public class UserServiceImpl implements UserService {
     /**
      * Создаёт нового пользователя на основе DTO объекта. Id генерируется автоматически на уровне бд.
      *
-     * @param userDto DTO объект содержащий информацию о новом пользователе:
-     *                {String firstName, String lastName, String email}.
+     * @param dto DTO объект содержащий информацию о новом пользователе:
+     *            {String firstName, String lastName, String email, String password}.
      * @return UserResponseDto объект, содержащий информацию о пользователе:
      * {UUID id, String fullName, String email, Set epics}
      */
     @Override
-    public UserResponseDto createUser(UserDto userDto) {
-        User user = new User(userDto);
+    public UserResponseDto registerUser(RegisterFormDto dto) {
+        User user = new User(dto);
 
+        userRepository.save(user);
+
+        return UserMapper.toUserResponseDto(user);
+    }
+
+    @Override
+    public UserResponseDto login(LoginFormDto loginFormDto) {
+        User user = userRepository.findByEmail(loginFormDto.getEmail())
+                .orElseThrow(() -> new UserByEmailNotFoundException(loginFormDto.getEmail()));
+
+        if (!Objects.equals(user.getPassword(), loginFormDto.getPassword())) {
+            throw new UserInvalidPassword();
+        }
+
+        if (user.getLogon()) {
+            throw new UserLoginHasBeenCompletedException();
+        }
+
+        user.setLogon(true);
+        userRepository.save(user);
+
+        return UserMapper.toUserResponseDto(user);
+    }
+
+    @Override
+    public UserResponseDto logout(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserByIdNotFoundException(userId));
+
+        user.setLogon(false);
         userRepository.save(user);
 
         return UserMapper.toUserResponseDto(user);

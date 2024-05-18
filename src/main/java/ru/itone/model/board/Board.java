@@ -1,13 +1,17 @@
 package ru.itone.model.board;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import ru.itone.model.board.dto.BoardDto;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.user.User;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter

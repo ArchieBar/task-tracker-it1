@@ -1,9 +1,12 @@
 package ru.itone.model.user;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import ru.itone.model.epic.Epic;
+import ru.itone.model.user.dto.RegisterFormDto;
 import ru.itone.model.user.dto.UserDto;
 
 import javax.persistence.*;
@@ -33,6 +36,12 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "logon")
+    private Boolean logon;
+
     @OneToMany
     @JoinColumn(name = "user_id")
     private Set<Entitlement> entitlements;
@@ -55,6 +64,20 @@ public class User {
                 userDto.getLastName().substring(1).toLowerCase();
 
         this.email = userDto.getEmail();
+        this.entitlements = new HashSet<>();
+        this.epics = new HashSet<>();
+    }
+
+    public User(RegisterFormDto dto) {
+        this.firstName = dto.getFirstName().substring(0, 1).toUpperCase() +
+                dto.getFirstName().substring(1).toLowerCase();
+
+        this.lastName = dto.getLastName().substring(0, 1).toUpperCase() +
+                dto.getLastName().substring(1).toLowerCase();
+
+        this.email = dto.getEmail();
+        this.password = dto.getPassword();
+        this.logon = true;
         this.entitlements = new HashSet<>();
         this.epics = new HashSet<>();
     }

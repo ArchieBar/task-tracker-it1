@@ -2,7 +2,6 @@ package ru.itone.model.user.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.itone.model.epic.Epic;
 import ru.itone.model.epic.dto.EpicResponseDto;
 
 import java.util.List;
