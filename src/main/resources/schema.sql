@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS Comments;
 DROP TABLE IF EXISTS Tasks;
 DROP TABLE IF EXISTS Epics;
 DROP TABLE IF EXISTS Entitlements;
+DROP TABLE IF EXISTS Invitations;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Boards;
 
@@ -21,6 +22,16 @@ CREATE TABLE IF NOT EXISTS Users (
     password VARCHAR(255) NOT NULL,
     logon BOOLEAN NOT NULL,
     CONSTRAINT pk_user PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS Invitations (
+    id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    board_id VARCHAR(36) NOT NULL,
+    confirmed BOOLEAN NOT NULL,
+    CONSTRAINT pk_invitation PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (board_id) REFERENCES Boards(id)
 );
 
 CREATE TABLE IF NOT EXISTS Entitlements (

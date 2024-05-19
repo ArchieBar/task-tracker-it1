@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.itone.exception.board.BoardNotFoundByIdException;
+import ru.itone.exception.user.EntitlementByUserIdAndBoardIdNotFoundException;
 import ru.itone.exception.user.UserAccessDeniedException;
 import ru.itone.exception.user.UserByIdNotFoundException;
 import ru.itone.exception.user.UserRightsByUserIdAndBoardIdNotFoundException;
@@ -11,6 +12,7 @@ import ru.itone.model.board.Board;
 import ru.itone.model.board.BoardMapper;
 import ru.itone.model.board.dto.BoardDto;
 import ru.itone.model.board.dto.BoardResponseDto;
+import ru.itone.model.board.invite.Invite;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.task.Task;
 import ru.itone.model.user.Entitlement;
@@ -30,6 +32,7 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
     private final EpicRepository epicRepository;
     private final TaskRepository taskRepository;
+    private final InviteRepository inviteRepository;
 
     /**
      * Возвращает все Доски задач постранично используя Pageable.
@@ -82,6 +85,46 @@ public class BoardServiceImpl implements BoardService {
         userRepository.save(user);
 
         return BoardMapper.toBoardResponseDto(board);
+    }
+
+    @Override
+    public void inviteUser(UUID owner, UUID boardId, UUID userId) {
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(owner, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(owner, boardId));
+
+        if (!entitlement.getEntitlement().equals(EntitlementEnum.OWNER)) {
+            throw new UserAccessDeniedException(owner);
+        }
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserByIdNotFoundException(userId));
+
+        Invite invite = new Invite(user, board);
+        inviteRepository.save(invite);
+    }
+
+    @Override
+    public void issueEntitlement(UUID ownerId, UUID boardId, UUID userId, EntitlementEnum entitlement) {
+        EntitlementEnum ownerEntitlement = entitlementRepository.findByUserIdAndBoardId(ownerId, boardId)
+                .orElseThrow(() -> new EntitlementByUserIdAndBoardIdNotFoundException(ownerId, boardId))
+                .getEntitlement();
+
+        if (ownerEntitlement.equals(EntitlementEnum.USER) || ownerEntitlement.equals(EntitlementEnum.EDITOR)) {
+            throw new UserAccessDeniedException(ownerId);
+        }
+
+        if (ownerEntitlement.equals(EntitlementEnum.ADMIN) && entitlement.equals(EntitlementEnum.OWNER)) {
+            throw new UserAccessDeniedException(ownerId);
+        }
+
+        Entitlement userEntitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
+                .orElseThrow(() -> new EntitlementByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        userEntitlement.setEntitlement(entitlement);
+        entitlementRepository.save(userEntitlement);
     }
 
     /**
@@ -140,6 +183,9 @@ public class BoardServiceImpl implements BoardService {
             taskRepository.deleteAll(tasks);
         }
 
+        List<Invite> invitations = inviteRepository.findAllByBoardId(boardId);
+
+        inviteRepository.deleteAll(invitations);
         entitlementRepository.deleteAllByBoardId(boardId);
         epicRepository.deleteAll(epics);
         boardRepository.deleteById(boardId);

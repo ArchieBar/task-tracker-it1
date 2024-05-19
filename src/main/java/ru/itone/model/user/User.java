@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
+import ru.itone.model.board.invite.Invite;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.user.dto.RegisterFormDto;
 import ru.itone.model.user.dto.UserDto;

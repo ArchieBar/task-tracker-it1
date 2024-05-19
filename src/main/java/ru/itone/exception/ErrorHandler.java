@@ -41,7 +41,10 @@ public class ErrorHandler {
             UserByEmailNotFoundException.class,
             EpicByIdNotFoundException.class,
             CommentByIdNotFoundException.class,
-            TaskByIdNotFoundException.class
+            TaskByIdNotFoundException.class,
+            InviteByUserIdAndBoardIdNotFoundException.class,
+            EntitlementByUserIdAndBoardIdNotFoundException.class,
+            InviteByUserIdAndBoardIdNotFoundException.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     private ErrorResponse objectNotFoundByIdHandler(RuntimeException e) {
