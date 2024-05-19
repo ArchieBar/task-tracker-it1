@@ -19,10 +19,12 @@ public interface EntitlementRepository extends JpaRepository<Entitlement, UUID> 
 
     List<Entitlement> findAllByUserIdAndEntitlement(UUID userId, EntitlementEnum entitlement);
 
-    List<Entitlement> findAllByUserId(UUID userId);
-
     @Modifying
     @Transactional
     @Query("DELETE FROM Entitlement e WHERE e.board.id = :id")
     void deleteAllByBoardId(UUID id);
+
+    @Modifying
+    @Transactional
+    void deleteAllByUserId(UUID id);
 }

@@ -16,10 +16,8 @@ import ru.itone.model.user.dto.LoginFormDto;
 import ru.itone.model.user.dto.RegisterFormDto;
 import ru.itone.model.user.dto.UserDto;
 import ru.itone.model.user.dto.UserResponseDto;
-import ru.itone.repository.BoardRepository;
-import ru.itone.repository.EntitlementRepository;
-import ru.itone.repository.InviteRepository;
-import ru.itone.repository.UserRepository;
+import ru.itone.repository.*;
+import ru.itone.service.board.BoardService;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,8 +29,10 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final InviteRepository inviteRepository;
+    private final BoardService boardService;
     private final BoardRepository boardRepository;
     private final EntitlementRepository entitlementRepository;
+    private final CommentRepository commentRepository;
 
     /**
      * Находит пользователя по его идентификатору.
@@ -122,6 +122,10 @@ public class UserServiceImpl implements UserService {
         invite.setConfirmed(true);
         inviteRepository.save(invite);
 
+        Entitlement entitlement = new Entitlement(board, user, EntitlementEnum.USER);
+        entitlement = entitlementRepository.save(entitlement);
+        user.addEntitlement(entitlement);
+
         board.addUser(user);
         boardRepository.save(board);
     }
@@ -172,10 +176,10 @@ public class UserServiceImpl implements UserService {
         List<Entitlement> entitlementsOwnerThisUser =
                 entitlementRepository.findAllByUserIdAndEntitlement(userId, EntitlementEnum.OWNER);
 
-        if (entitlementsOwnerThisUser.isEmpty()) {
-            List<Entitlement> entitlements = entitlementRepository.findAllByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserByIdNotFoundException(userId));
 
-            entitlementRepository.deleteAll(entitlements);
+        if (entitlementsOwnerThisUser.isEmpty()) {
             userRepository.deleteById(userId);
             return;
         }
@@ -184,20 +188,17 @@ public class UserServiceImpl implements UserService {
         for (Entitlement entitlementThisUser : entitlementsOwnerThisUser) {
             List<Entitlement> entitlementsThisBoard =
                     entitlementRepository.findAllByBoardId(entitlementThisUser.getBoard().getId());
-            entitlementsThisBoard.remove(entitlementThisUser);
+
+            Board board = boardRepository.findById(entitlementThisUser.getBoard().getId())
+                    .orElseThrow(() -> new BoardNotFoundByIdException(entitlementThisUser.getBoard().getId()));
+            board.getUsers().remove(user);
+            boardRepository.save(board);
 
             for (Entitlement entitlementAdminBoard : entitlementsThisBoard) {
                 if (entitlementAdminBoard.getEntitlement().equals(EntitlementEnum.ADMIN)) {
                     entitlementAdminBoard.setEntitlement(EntitlementEnum.OWNER);
                     entitlementRepository.save(entitlementAdminBoard);
                     continue nextEntitlement;
-                } else {
-                    entitlementsThisBoard.remove(entitlementAdminBoard);
-
-                    if (entitlementsThisBoard.isEmpty()) {
-                        boardRepository.deleteById(entitlementThisUser.getBoard().getId());
-                        continue nextEntitlement;
-                    }
                 }
             }
 
@@ -206,13 +207,6 @@ public class UserServiceImpl implements UserService {
                     entitlementEditorBoard.setEntitlement(EntitlementEnum.OWNER);
                     entitlementRepository.save(entitlementEditorBoard);
                     continue nextEntitlement;
-                } else {
-                    entitlementsThisBoard.remove(entitlementEditorBoard);
-
-                    if (entitlementsThisBoard.isEmpty()) {
-                        boardRepository.deleteById(entitlementThisUser.getBoard().getId());
-                        continue nextEntitlement;
-                    }
                 }
             }
 
@@ -221,12 +215,13 @@ public class UserServiceImpl implements UserService {
                     entitlementUserBoard.setEntitlement(EntitlementEnum.OWNER);
                     entitlementRepository.save(entitlementUserBoard);
                     continue nextEntitlement;
-                } else {
-                    entitlementsThisBoard.remove(entitlementUserBoard);
                 }
             }
-            boardRepository.deleteById(entitlementThisUser.getBoard().getId());
+
+            boardService.deleteBoardById(userId, entitlementThisUser.getBoard().getId());
         }
+        entitlementRepository.deleteAllByUserId(userId);
+        commentRepository.deleteAllByAuthorId(userId);
         userRepository.deleteById(userId);
     }
 }

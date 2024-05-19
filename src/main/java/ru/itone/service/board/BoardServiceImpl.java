@@ -120,11 +120,19 @@ public class BoardServiceImpl implements BoardService {
             throw new UserAccessDeniedException(ownerId);
         }
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserByIdNotFoundException(userId));
+
         Entitlement userEntitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
                 .orElseThrow(() -> new EntitlementByUserIdAndBoardIdNotFoundException(userId, boardId));
 
+        user.getEntitlements().remove(userEntitlement);
+
         userEntitlement.setEntitlement(entitlement);
-        entitlementRepository.save(userEntitlement);
+        userEntitlement = entitlementRepository.save(userEntitlement);
+
+        user.addEntitlement(userEntitlement);
+        userRepository.save(user);
     }
 
     /**

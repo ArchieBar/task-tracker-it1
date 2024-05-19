@@ -2,33 +2,25 @@ package ru.itone.model.epic.comment;
 
 import ru.itone.model.epic.comment.dto.CommentResponseDto;
 import ru.itone.model.user.UserMapper;
-import ru.itone.model.user.dto.UserResponseDto;
+import ru.itone.model.user.dto.AuthorCommentDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CommentMapper {
-    //TODO
-    // Пробросить NPE?
     public static CommentResponseDto toCommentResponseDto(Comment comment) {
         CommentResponseDto commentResponseDto = new CommentResponseDto();
 
-        if (comment.getId() != null) {
-            commentResponseDto.setId(comment.getId());
-        }
+        commentResponseDto.setId(comment.getId());
 
         if (comment.getText() != null) {
             commentResponseDto.setText(comment.getText());
         }
 
-        if (comment.getCreatedTime() != null) {
-            commentResponseDto.setCreatedTime(comment.getCreatedTime());
-        }
+        commentResponseDto.setCreatedTime(comment.getCreatedTime());
 
-        if (comment.getAuthor() != null) {
-            UserResponseDto user = UserMapper.toUserResponseDto(comment.getAuthor());
-            commentResponseDto.setAuthor(user);
-        }
+        AuthorCommentDto user = UserMapper.toAuthorCommentDto(comment.getAuthor());
+        commentResponseDto.setAuthor(user);
 
         return commentResponseDto;
     }

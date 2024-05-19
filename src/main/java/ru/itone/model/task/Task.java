@@ -31,8 +31,6 @@ public class Task {
     @JoinColumn(name = "epic_id", updatable = false)
     private Epic epic;
 
-    //TODO
-    // Пробросить NPE?
     public Task(TaskDto taskDto, Epic epic) {
         this.description = taskDto.getDescription();
         this.isCompleted = false;

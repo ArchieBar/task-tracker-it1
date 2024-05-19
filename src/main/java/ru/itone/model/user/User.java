@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
-import ru.itone.model.board.invite.Invite;
 import ru.itone.model.epic.Epic;
 import ru.itone.model.user.dto.RegisterFormDto;
 import ru.itone.model.user.dto.UserDto;
@@ -44,7 +43,7 @@ public class User {
     private Boolean logon;
 
     @OneToMany
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", updatable = false)
     private Set<Entitlement> entitlements;
 
     @ManyToMany(fetch = FetchType.LAZY)

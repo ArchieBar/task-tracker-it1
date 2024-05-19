@@ -47,10 +47,6 @@ public class Epic {
     @JoinColumn(name = "board_id")
     private Board board;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id")
-    private User author;
-
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "epic_id", updatable = false)
     private Set<Task> tasks;
@@ -67,14 +63,13 @@ public class Epic {
     )
     private Set<User> users;
 
-    public Epic(EpicDto dto, Board board, User author) {
+    public Epic(EpicDto dto, Board board) {
         this.name = dto.getName();
         this.description = dto.getDescription();
         this.status = EpicStatus.TODO;
         this.createdTime = LocalDateTime.now();
         this.endTime = dto.getEndTime();
         this.board = board;
-        this.author = author;
         this.tasks = new HashSet<>();
         this.activity = new ArrayList<>();
         this.users = new HashSet<>();

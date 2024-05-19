@@ -21,7 +21,6 @@ public class EpicResponseDto {
     private String status;
     private LocalDateTime createdTime;
     private LocalDateTime endTime;
-    private UserResponseDto author;
     private List<TaskResponseDto> tasks;
     private List<CommentResponseDto> activity;
     private List<UserResponseDto> users;

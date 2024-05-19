@@ -201,6 +201,9 @@ public class TaskServiceImpl implements TaskService {
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskByIdNotFoundException(taskId));
+
         UUID boardId = epic.getBoard().getId();
 
         Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
@@ -209,6 +212,13 @@ public class TaskServiceImpl implements TaskService {
         if (entitlement.getEntitlement().equals(EntitlementEnum.USER)) {
             throw new UserAccessDeniedException(userId);
         }
+        Set<Task> tasks = epic.getTasks();
+        tasks.remove(task);
+
+        epic.setTasks(tasks);
+        EpicStatus status = checkStatus(tasks);
+        epic.setStatus(status);
+        epicRepository.save(epic);
 
         taskRepository.deleteById(taskId);
     }

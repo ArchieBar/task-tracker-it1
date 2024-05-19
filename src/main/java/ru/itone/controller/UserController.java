@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.itone.model.Marker;
-import ru.itone.model.board.Board;
 import ru.itone.model.board.dto.BoardResponseDto;
 import ru.itone.model.user.dto.LoginFormDto;
 import ru.itone.model.user.dto.RegisterFormDto;

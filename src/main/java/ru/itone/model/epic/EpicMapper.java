@@ -13,39 +13,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class EpicMapper {
-    //TODO
-    // Пробросить NPE?
     public static EpicResponseDto toEpicResponseDto(Epic epic) {
         EpicResponseDto epicResponseDto = new EpicResponseDto();
 
-        if (epic.getId() != null) {
-            epicResponseDto.setId(epic.getId());
-        }
+        epicResponseDto.setId(epic.getId());
 
-        if (epic.getName() != null) {
-            epicResponseDto.setName(epic.getName());
-        }
+        epicResponseDto.setName(epic.getName());
 
         if (epic.getDescription() != null) {
             epicResponseDto.setDescription(epic.getDescription());
         }
 
-        if (epic.getStatus() != null) {
-            epicResponseDto.setStatus(epic.getStatus().name());
-        }
+        epicResponseDto.setStatus(epic.getStatus().name());
 
-        if (epic.getCreatedTime() != null) {
-            epicResponseDto.setCreatedTime(epic.getCreatedTime());
-        }
+        epicResponseDto.setCreatedTime(epic.getCreatedTime());
 
-        if (epic.getEndTime() != null) {
-            epicResponseDto.setEndTime(epic.getEndTime());
-        }
+        epicResponseDto.setEndTime(epic.getEndTime());
 
-        if (epic.getActivity() != null) {
-            UserResponseDto user = UserMapper.toUserResponseDto(epic.getAuthor());
-            epicResponseDto.setAuthor(user);
-        }
 
         if (epic.getTasks() != null) {
             List<TaskResponseDto> tasks = TaskMapper.toTaskResponseDtoList(epic.getTasks());

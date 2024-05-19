@@ -7,8 +7,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TaskMapper {
-    //TODO
-    // Пробросить NPE?
     public static TaskResponseDto toTaskResponseDto(Task task) {
         TaskResponseDto taskResponseDto = new TaskResponseDto();
 

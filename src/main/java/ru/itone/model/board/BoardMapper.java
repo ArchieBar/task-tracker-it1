@@ -11,19 +11,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BoardMapper {
-
-    //TODO
-    // Пробросить NPE
     public static BoardResponseDto toBoardResponseDto(Board board) {
         BoardResponseDto boardResponseDto = new BoardResponseDto();
 
-        if (board.getId() != null) {
-            boardResponseDto.setId(board.getId());
-        }
+        boardResponseDto.setId(board.getId());
 
-        if (board.getName() != null) {
-            boardResponseDto.setName(board.getName());
-        }
+        boardResponseDto.setName(board.getName());
 
         if (board.getEpics() != null) {
             List<EpicResponseDto> epics = EpicMapper.toEpicResponseDtoList(board.getEpics());

@@ -97,7 +97,7 @@ public class EpicServiceImpl implements EpicService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
 
-        Epic epic = new Epic(epicDto, board, user);
+        Epic epic = new Epic(epicDto, board);
         epic = epicRepository.save(epic);
 
         board.addEpic(epic);
@@ -106,9 +106,6 @@ public class EpicServiceImpl implements EpicService {
         return EpicMapper.toEpicResponseDto(epic);
     }
 
-    //TODO
-    // Добавить проверку прав доступа
-    // Создавать комментарии могут только участники эпика
     @Override
     public CommentResponseDto createCommentByEpicId(UUID userId, UUID epicId, CommentDto commentDto) {
         User user = userRepository.findById(userId)
@@ -200,10 +197,6 @@ public class EpicServiceImpl implements EpicService {
      * @throws BoardNotFoundByIdException В случае если сущность не найдена.
      *                                    Сообщение: "Доска задач с ID: '%s' не найдена.". Обработка в ErrorHandler.
      */
-
-    //TODO
-    // это можно сделать через каскадные операции,
-    // изучить и применить
     @Override
     public void deleteEpicById(UUID userId, UUID boardId, UUID epicId) {
         Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)

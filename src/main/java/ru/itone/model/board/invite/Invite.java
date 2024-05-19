@@ -26,7 +26,7 @@ public class Invite {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "board_id")
+    @JoinColumn(name = "board_id", updatable = false)
     private Board board;
 
     @Column(name = "confirmed")
