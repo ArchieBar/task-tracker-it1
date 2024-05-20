@@ -67,6 +67,24 @@ public class EpicController {
         return epicService.updateEpicById(userId, epicId, epicDto);
     }
 
+    @PatchMapping("/take/{epicId}")
+    @ResponseStatus(HttpStatus.OK)
+    public String takeEpic(@RequestHeader("X-User-Id") UUID userId,
+                           @PathVariable UUID epicId) {
+        log.info("Вызов PATCH-операции: /epic/take/{epicId}");
+        epicService.takeEpic(userId, epicId);
+        return "Теперь вы выполняете этот эпик.";
+    }
+
+    @PatchMapping("/refuse/{epicId}")
+    @ResponseStatus(HttpStatus.OK)
+    public String refuseEpic(@RequestHeader("X-User-Id") UUID userId,
+                             @PathVariable UUID epicId) {
+        log.info("Вызов PATCH-операции: /epic/refuse/{epicId}");
+        epicService.refuseEpic(userId, epicId);
+        return "Вы отказались от выполнения этого эпика.";
+    }
+
     @PatchMapping("/comment/{commentId}")
     @ResponseStatus(HttpStatus.OK)
     public CommentResponseDto updateCommentById(@RequestHeader("X-User-Id") UUID userId,

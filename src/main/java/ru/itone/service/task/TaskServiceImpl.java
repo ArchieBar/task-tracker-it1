@@ -34,12 +34,11 @@ public class TaskServiceImpl implements TaskService {
     private final EpicRepository epicRepository;
 
     /**
-     * Находит список задач по ID эпика.
+     * Находит список задач по Id эпика.
      *
-     * @param epicId ID эпика в формате UUID.
-     * @return Список DTO объектов TaskResponseDto сущностей Task.
-     * @throws EpicByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @param epicId Id эпика.
+     * @return Список DTO объектов задач.
+     * @throws EpicByIdNotFoundException если эпик не найдена.
      */
     @Override
     public List<TaskResponseDto> findTasksByEpicId(UUID epicId) {
@@ -52,12 +51,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     /**
-     * Находит сущность по ID.
+     * Находит задачу по Id.
      *
-     * @param taskId ID задачи в формате UUID.
-     * @return DTO объект TaskResponseDto сущности Task.
-     * @throws TaskByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Задача с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @param taskId ID задачи.
+     * @return DTO объект задачи.
+     * @throws TaskByIdNotFoundException если задача не найдена.
      */
     @Override
     public TaskResponseDto findTaskById(UUID taskId) {
@@ -68,13 +66,16 @@ public class TaskServiceImpl implements TaskService {
     }
 
     /**
-     * Создаёт новую сущность на основе DTO объекта.
+     * Создаёт новую задачу на основе DTO объекта.
+     * Создавать задачи могут пользователи с права OWNER, ADMIN или EDITOR.
      *
-     * @param epicId  ID эпика в формате UUID.
-     * @param taskDto DTO объект содержащий информацию о новой сущности.
-     * @return DTO объект TaskResponseDto новой сущности Task.
-     * @throws EpicByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @param userId  Id владельца запроса.
+     * @param epicId  ID эпика.
+     * @param taskDto DTO объект содержащий информацию о новой задачи.
+     * @return DTO объект новой задачи.
+     * @throws EpicByIdNotFoundException                     если эпик не найден.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если пользователю отказано в доступе.
      */
     @Override
     public TaskResponseDto createTaskById(UUID userId, UUID epicId, TaskDto taskDto) {
@@ -105,13 +106,16 @@ public class TaskServiceImpl implements TaskService {
     }
 
     /**
-     * Обновляет существующую сущность на основе DTO объекта.
+     * Обновляет существующую задачу на основе DTO объекта.
+     * Обновлять задачи могут пользователи с права в доске OWNER, ADMIN или EDITOR.
      *
-     * @param taskId  ID задачи в формате UUID.
-     * @param taskDto DTO объект содержащий информацию об обновляемой сущности.
-     * @return DTO объект TaskResponseDto обновлённой сущности Task.
-     * @throws TaskByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Задача с ID: '%s' не найдена.". Обработка в ErrorHandler.
+     * @param userId  Id владельца запроса.
+     * @param taskId  Id задачи.
+     * @param taskDto DTO объект содержащий информацию об обновляемой задаче.
+     * @return DTO объект обновлённой задачи.
+     * @throws TaskByIdNotFoundException                     если задача не найдена.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если пользователю отказано в доступе.
      */
     @Override
     public TaskResponseDto updateTaskById(UUID userId, UUID taskId, TaskDto taskDto) {
@@ -138,15 +142,18 @@ public class TaskServiceImpl implements TaskService {
 
     /**
      * Обновляет статус задачи. Также обновляет статус эпика на основе списка задач.
+     * Обновлять статус задач могут участники эпика, либо пользователи с правами в доске OWNER или ADMIN.
      *
-     * @param epicId    ID эпика в формате UUID.
-     * @param taskId    ID задачи в формате UUID.
-     * @param completed Boolean значение выполнения задачи.
-     * @return DTO объект TaskResponseDto обновлённой сущности Task.
-     * @throws EpicByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
-     * @throws TaskByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Задача с ID: '%s' не найдена.". Обработка в ErrorHandler.
+     * @param userId    Id владельца запроса.
+     * @param epicId    Id эпика.
+     * @param taskId    Id задачи.
+     * @param completed boolean значение выполнения задачи.
+     * @return DTO объект обновлённой задачи.
+     * @throws UserByIdNotFoundException                     если пользователь не найден.
+     * @throws EpicByIdNotFoundException                     если эпик не найден.
+     * @throws TaskByIdNotFoundException                     если задача не найдена.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если пользователю отказано в доступе.
      */
     @Override
     public TaskResponseDto updateCompletedTask(UUID userId, UUID epicId, UUID taskId, Boolean completed) {
@@ -188,13 +195,15 @@ public class TaskServiceImpl implements TaskService {
 
     /**
      * Удаляет задачу по её ID. Также обновляет статус эпика на основе оставшегося списка задач.
+     * Удалить задачу могут пользователи с права в доске OWNER, ADMIN или EDITOR.
      *
-     * @param epicId ID эпика в формате UUID.
-     * @param taskId ID задачи в формате UUID.
-     * @throws EpicByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
-     * @throws TaskByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Задача с ID: '%s' не найдена.". Обработка в ErrorHandler.
+     * @param userId Id владельца запроса.
+     * @param epicId Id эпика.
+     * @param taskId Id задачи.
+     * @throws EpicByIdNotFoundException                     если эпик не найдена.
+     * @throws TaskByIdNotFoundException                     если задача не найдена.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если пользователю отказано в доступе.
      */
     @Override
     public void deleteTaskById(UUID userId, UUID epicId, UUID taskId) {

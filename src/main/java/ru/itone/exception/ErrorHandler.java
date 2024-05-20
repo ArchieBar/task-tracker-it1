@@ -31,7 +31,7 @@ public class ErrorHandler {
             HttpHeaderNotFoundException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse badRequestHandler(RuntimeException e) {
+    private ErrorResponse badRequestHandler(RuntimeException e) {
         log.info("Ошибка некорректного запроса: {}", e.getMessage());
         return new ErrorResponse("Некорректный запрос", e.getMessage());
     }
@@ -43,8 +43,8 @@ public class ErrorHandler {
             CommentByIdNotFoundException.class,
             TaskByIdNotFoundException.class,
             InviteByUserIdAndBoardIdNotFoundException.class,
-            EntitlementByUserIdAndBoardIdNotFoundException.class,
-            InviteByUserIdAndBoardIdNotFoundException.class
+            InviteByUserIdAndBoardIdNotFoundException.class,
+            UserNotFoundInEpicException.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     private ErrorResponse objectNotFoundByIdHandler(RuntimeException e) {

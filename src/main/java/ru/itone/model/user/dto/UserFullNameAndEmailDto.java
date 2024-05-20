@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class AuthorCommentDto {
+public class UserFullNameAndEmailDto {
     private String fullName;
     private String email;
 }

@@ -6,7 +6,7 @@ import ru.itone.model.epic.dto.EpicResponseDto;
 import ru.itone.model.task.TaskMapper;
 import ru.itone.model.task.dto.TaskResponseDto;
 import ru.itone.model.user.UserMapper;
-import ru.itone.model.user.dto.UserResponseDto;
+import ru.itone.model.user.dto.UserFullNameAndEmailDto;
 
 import java.util.List;
 import java.util.Set;
@@ -42,7 +42,7 @@ public class EpicMapper {
         }
 
         if (epic.getUsers() != null) {
-            List<UserResponseDto> users = UserMapper.toUserResponseDtoList(epic.getUsers());
+            List<UserFullNameAndEmailDto> users = UserMapper.toUserFullNameAndEmailDtoList(epic.getUsers());
             epicResponseDto.setUsers(users);
         }
 

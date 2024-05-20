@@ -25,6 +25,10 @@ public interface EpicService {
                                    UUID epicId,
                                    EpicDto epicDto);
 
+    void takeEpic(UUID userId, UUID epicId);
+
+    void refuseEpic(UUID userId, UUID epicId);
+
     CommentResponseDto updateCommentById(UUID userId,
                                          UUID commentId,
                                          CommentDto commentDto);

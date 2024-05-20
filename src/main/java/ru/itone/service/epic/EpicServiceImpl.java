@@ -2,11 +2,12 @@ package ru.itone.service.epic;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.itone.exception.board.BoardNotFoundByIdException;
+import ru.itone.exception.board.BoardByIdNotFoundException;
 import ru.itone.exception.epic.EpicByIdNotFoundException;
 import ru.itone.exception.epic.comment.CommentByIdNotFoundException;
 import ru.itone.exception.user.UserAccessDeniedException;
 import ru.itone.exception.user.UserByIdNotFoundException;
+import ru.itone.exception.user.UserNotFoundInEpicException;
 import ru.itone.exception.user.UserRightsByUserIdAndBoardIdNotFoundException;
 import ru.itone.model.board.Board;
 import ru.itone.model.epic.Epic;
@@ -40,15 +41,14 @@ public class EpicServiceImpl implements EpicService {
     /**
      * Возвращает все Эпики одной доски по Id постранично используя Pageable.
      *
-     * @param boardId Id доски к которой принадлежит эпик.
-     * @return Список DTO объектов EpicResponseDto сущностей Epic.
-     * @throws BoardNotFoundByIdException В случае если сущность не найдена.
-     *                                    Сообщение: "Доска задач с ID: '%s' не найдена.". Обработка в ErrorHandler.
+     * @param boardId Id доски.
+     * @return Список DTO объектов эпиков.
+     * @throws BoardByIdNotFoundException В случае если доска не найдена.
      */
     @Override
     public List<EpicResponseDto> findEpicsByBoardId(UUID boardId) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+                .orElseThrow(() -> new BoardByIdNotFoundException(boardId));
 
         Set<Epic> epics = board.getEpics();
 
@@ -56,12 +56,11 @@ public class EpicServiceImpl implements EpicService {
     }
 
     /**
-     * Находит Эпик по UUID, если сущность не найдена пробрасывает исключение.
+     * Находит Эпик по Id.
      *
-     * @param epicId Id сущности в формате UUID.
-     * @return DTO объект EpicResponseDto сущности Epic.
-     * @throws EpicByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @param epicId Id эпика.
+     * @return DTO объект эпика.
+     * @throws EpicByIdNotFoundException В случае если эпик не найден.
      */
     @Override
     public EpicResponseDto findEpicById(UUID epicId) {
@@ -72,13 +71,16 @@ public class EpicServiceImpl implements EpicService {
     }
 
     /**
-     * Создаёт новую сущность на основе DTO объекта. Id генерируется на уровне бд.
+     * Создаёт новую сущность на основе DTO объекта.
+     * Создать эпик могут все пользователи которые имеют права OWNER, ADMIN или EDITOR.
      *
-     * @param epicDto DTO объект содержащий информацию о новом Эпике.
+     * @param userId  Id владельца запроса.
+     * @param epicDto DTO объект содержащий информацию о новом эпике.
      * @param boardId Id доски задач.
-     * @return DTO объект EpicResponseDto новой сущности Epic.
-     * @throws BoardNotFoundByIdException В случае если сущность не найдена.
-     *                                    Сообщение: "Доска задач с ID: '%s' не найдена.". Обработка в ErrorHandler.
+     * @return DTO объект нового эпика.
+     * @throws BoardByIdNotFoundException                    если доска не найдена.
+     * @throws UserByIdNotFoundException                     если пользователь не найден.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права владельца запроса не найдены в доске.
      */
     @Override
     public EpicResponseDto createEpic(UUID userId, UUID boardId, EpicDto epicDto) {
@@ -95,7 +97,7 @@ public class EpicServiceImpl implements EpicService {
         }
 
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+                .orElseThrow(() -> new BoardByIdNotFoundException(boardId));
 
         Epic epic = new Epic(epicDto, board);
         epic = epicRepository.save(epic);
@@ -106,6 +108,18 @@ public class EpicServiceImpl implements EpicService {
         return EpicMapper.toEpicResponseDto(epic);
     }
 
+    /**
+     * Создаёт новый комментарий в эпике.
+     * Комментарии могут создать только участники доски.
+     *
+     * @param userId     Id владельца запроса.
+     * @param epicId     Id эпика в котором хотят оставить комментарий.
+     * @param commentDto DTO объект содержащий информацию о новом комментарии.
+     * @return DTO объект нового комментария.
+     * @throws UserByIdNotFoundException                     если пользователь не найден.
+     * @throws EpicByIdNotFoundException                     если эпик не найден.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     */
     @Override
     public CommentResponseDto createCommentByEpicId(UUID userId, UUID epicId, CommentDto commentDto) {
         User user = userRepository.findById(userId)
@@ -131,13 +145,17 @@ public class EpicServiceImpl implements EpicService {
     }
 
     /**
-     * Обновляет Epic на основе DTO объекта.
+     * Обновляет эпик на основе DTO объекта.
+     * Обновлять эпики могут пользователи с правами OWNER, ADMIN или EDITOR.
      *
-     * @param epicId  Id сущности в формате UUID.
-     * @param epicDto DTO объект содержащий информацию об обновлённом Эпике.
-     * @return DTO объект EpicResponseDto обновлённой сущности Epic.
-     * @throws EpicByIdNotFoundException В случае если сущность не найдена.
-     *                                   Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @param userId  Id владельца запроса.
+     * @param epicId  Id эпика для обновления.
+     * @param epicDto DTO объект содержащий информацию об обновляемом эпике.
+     * @return DTO объект обновлённой сущности эпика.
+     * @throws UserByIdNotFoundException                     если пользователь не найден.
+     * @throws EpicByIdNotFoundException                     В случае если сущность не найдена.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если пользователю отказано в доступе.
      */
     @Override
     public EpicResponseDto updateEpicById(UUID userId, UUID epicId, EpicDto epicDto) {
@@ -169,33 +187,95 @@ public class EpicServiceImpl implements EpicService {
         return EpicMapper.toEpicResponseDto(epicRepository.save(epic));
     }
 
+    /**
+     * Позволяет пользователю взять эпик для его выполнения.
+     * Брать эпики могут только участники доски.
+     *
+     * @param userId Id владельца запроса.
+     * @param epicId Id эпика.
+     * @throws EpicByIdNotFoundException                     если эпик не найден.
+     * @throws UserByIdNotFoundException                     если пользователь не найден.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя не найдены.
+     */
     @Override
-    public CommentResponseDto updateCommentById(UUID userId, UUID commentId, CommentDto commentDto) {
+    public void takeEpic(UUID userId, UUID epicId) {
+        Epic epic = epicRepository.findById(epicId)
+                .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserByIdNotFoundException(userId));
 
+        entitlementRepository.findByUserIdAndBoardId(userId, epic.getBoard().getId())
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, epic.getBoard().getId()));
+
+        epic.addUser(user);
+        epicRepository.save(epic);
+    }
+
+    /**
+     * Позволяет пользователю отказаться от выполнения эпика.
+     *
+     * @param userId Id владельца запроса.
+     * @param epicId Id эпика.
+     * @throws EpicByIdNotFoundException   если эпик не найден.
+     * @throws UserByIdNotFoundException   если пользователь не найден.
+     * @throws UserNotFoundInEpicException если пользователь не найден в числе участников эпика.
+     */
+    @Override
+    public void refuseEpic(UUID userId, UUID epicId) {
+        Epic epic = epicRepository.findById(epicId)
+                .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserByIdNotFoundException(userId));
+
+        Set<User> users = epic.getUsers();
+
+        if (users.contains(user)) {
+            users.remove(user);
+            epic.setUsers(users);
+            epicRepository.save(epic);
+        } else {
+            throw new UserNotFoundInEpicException(epicId, userId);
+        }
+    }
+
+    /**
+     * Обновляет комментарий на основе dto объекта.
+     * Обновить комментарий может только автор комментария.
+     *
+     * @param userId     Id владельца запроса.
+     * @param commentId  Id комментария.
+     * @param commentDto DTO объект обновляемого комментария.
+     * @return DTO объект обновлённого комментария.
+     * @throws CommentByIdNotFoundException если комментарий не найден.
+     * @throws UserAccessDeniedException    если пользователю отказано в доступе.
+     */
+    @Override
+    public CommentResponseDto updateCommentById(UUID userId, UUID commentId, CommentDto commentDto) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentByIdNotFoundException(commentId));
 
-        if (comment.getAuthor() != user) {
+        if (!comment.getAuthor().getId().equals(userId)) {
             throw new UserAccessDeniedException(userId);
         }
 
-        if (commentDto != null) {
-            comment.setText(commentDto.getText());
-        }
+        comment.setText(commentDto.getText());
 
         return CommentMapper.toCommentResponseDto(commentRepository.save(comment));
     }
 
     /**
-     * Удаляет сущность по Id. Также удаляет все связанные сущности задач.
+     * Удаляет эпик по Id. Также удаляет все связанные сущности задач.
+     * Удалить эпик могут пользователи с правами в этой доске OWNER, ADMIN или EDITOR.
      *
-     * @param epicId Id в формате UUID.
-     * @throws EpicByIdNotFoundException  В случае если сущность не найдена.
-     *                                    Сообщение: "Эпик с ID: '%s' не найден.". Обработка в ErrorHandler.
-     * @throws BoardNotFoundByIdException В случае если сущность не найдена.
-     *                                    Сообщение: "Доска задач с ID: '%s' не найдена.". Обработка в ErrorHandler.
+     * @param userId  Id владельца запроса.
+     * @param boardId Id доски.
+     * @param epicId  Id эпика.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если пользователю отказано в доступе.
+     * @throws EpicByIdNotFoundException                     если эпик не найден.
+     * @throws BoardByIdNotFoundException                    если доска не найдена.
      */
     @Override
     public void deleteEpicById(UUID userId, UUID boardId, UUID epicId) {
@@ -207,7 +287,7 @@ public class EpicServiceImpl implements EpicService {
         }
 
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+                .orElseThrow(() -> new BoardByIdNotFoundException(boardId));
 
         Epic epic = board.getEpics().stream()
                 .filter(e -> e.getId().equals(epicId))
@@ -223,11 +303,20 @@ public class EpicServiceImpl implements EpicService {
         epicRepository.deleteById(epicId);
     }
 
+    /**
+     * Удаляет комментарий.
+     * Удалить комментарий могут либо авторы комментария, либо пользователи с права в доске OWNER или ADMIN.
+     *
+     * @param userId    Id владельца запроса.
+     * @param epicId    Id эпика.
+     * @param commentId Id комментария.
+     * @throws EpicByIdNotFoundException                     если эпик не найден.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws CommentByIdNotFoundException                  если комментарий не найден.
+     * @throws UserAccessDeniedException                     если пользователю отказано в доступе.
+     */
     @Override
     public void deleteCommentById(UUID userId, UUID epicId, UUID commentId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserByIdNotFoundException(userId));
-
         Epic epic = epicRepository.findById(epicId)
                 .orElseThrow(() -> new EpicByIdNotFoundException(epicId));
 
@@ -243,8 +332,7 @@ public class EpicServiceImpl implements EpicService {
 
         EntitlementEnum entitlementEnum = entitlement.getEntitlement();
 
-
-        if (comment.getAuthor().getId() != user.getId() &&
+        if (!comment.getAuthor().getId().equals(userId) &&
                 (entitlementEnum.equals(EntitlementEnum.USER) || entitlementEnum.equals(EntitlementEnum.EDITOR))) {
             throw new UserAccessDeniedException(userId);
         }

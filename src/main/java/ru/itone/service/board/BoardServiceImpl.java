@@ -3,8 +3,7 @@ package ru.itone.service.board;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.itone.exception.board.BoardNotFoundByIdException;
-import ru.itone.exception.user.EntitlementByUserIdAndBoardIdNotFoundException;
+import ru.itone.exception.board.BoardByIdNotFoundException;
 import ru.itone.exception.user.UserAccessDeniedException;
 import ru.itone.exception.user.UserByIdNotFoundException;
 import ru.itone.exception.user.UserRightsByUserIdAndBoardIdNotFoundException;
@@ -52,19 +51,19 @@ public class BoardServiceImpl implements BoardService {
      *
      * @param boardId Id сущности в формате UUID.
      * @return DTO объект BoardResponseDto сущности Board.
-     * @throws BoardNotFoundByIdException В случае если сущность не найдена.
-     *                                    Сообщение: "Доска задач с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @throws BoardByIdNotFoundException В случае если сущность не найдена.
      */
     @Override
     public BoardResponseDto findBoardById(UUID boardId) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+                .orElseThrow(() -> new BoardByIdNotFoundException(boardId));
 
         return BoardMapper.toBoardResponseDto(board);
     }
 
     /**
-     * Создаёт новую сущность на основе DTO объекта. Id генерируется на уровне бд.
+     * Создаёт новую сущность на основе DTO объекта
+     * и присваивает новые права OWNER для владельца запроса.
      *
      * @param boardDto DTO объект содержащий информацию о новом Эпике.
      * @return DTO объект BoardResponseDto новой сущности Board.
@@ -87,17 +86,25 @@ public class BoardServiceImpl implements BoardService {
         return BoardMapper.toBoardResponseDto(board);
     }
 
+    /**
+     * Отправляет приглашение пользователю на присоединение к доске.
+     * Отправить приглашения могут только пользователи у которых права доступа OWNER.
+     *
+     * @param ownerId Id владельца запроса в формате UUID.
+     * @param boardId Id доски в формате UUID.
+     * @param userId  Id приглашаемого пользователя в формате UUID.
+     */
     @Override
-    public void inviteUser(UUID owner, UUID boardId, UUID userId) {
-        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(owner, boardId)
-                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(owner, boardId));
+    public void inviteUser(UUID ownerId, UUID boardId, UUID userId) {
+        Entitlement entitlement = entitlementRepository.findByUserIdAndBoardId(ownerId, boardId)
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(ownerId, boardId));
 
         if (!entitlement.getEntitlement().equals(EntitlementEnum.OWNER)) {
-            throw new UserAccessDeniedException(owner);
+            throw new UserAccessDeniedException(ownerId);
         }
 
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+                .orElseThrow(() -> new BoardByIdNotFoundException(boardId));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserByIdNotFoundException(userId));
@@ -106,10 +113,24 @@ public class BoardServiceImpl implements BoardService {
         inviteRepository.save(invite);
     }
 
+    /**
+     * Выдаёт права пользователя другим пользователям в доске.
+     * Выдать права могут только администраторы и владельцы доски.
+     * Администраторы доски не могут выдать права OWNER другим пользователям.
+     * Никто не может присвоить новые права пользователю с правами OWNER
+     *
+     * @param ownerId     Id владельца запроса в формате UUID.
+     * @param boardId     Id доски в формате UUID.
+     * @param userId      Id пользователя, которому собираются присвоить права.
+     * @param entitlement Наименование новых прав пользователя.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если владельцу запроса отказано в доступе к изменению прав.
+     * @throws UserByIdNotFoundException                     если пользователь, которому собираются изменить права не найден.
+     */
     @Override
     public void issueEntitlement(UUID ownerId, UUID boardId, UUID userId, EntitlementEnum entitlement) {
         EntitlementEnum ownerEntitlement = entitlementRepository.findByUserIdAndBoardId(ownerId, boardId)
-                .orElseThrow(() -> new EntitlementByUserIdAndBoardIdNotFoundException(ownerId, boardId))
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(ownerId, boardId))
                 .getEntitlement();
 
         if (ownerEntitlement.equals(EntitlementEnum.USER) || ownerEntitlement.equals(EntitlementEnum.EDITOR)) {
@@ -124,7 +145,11 @@ public class BoardServiceImpl implements BoardService {
                 .orElseThrow(() -> new UserByIdNotFoundException(userId));
 
         Entitlement userEntitlement = entitlementRepository.findByUserIdAndBoardId(userId, boardId)
-                .orElseThrow(() -> new EntitlementByUserIdAndBoardIdNotFoundException(userId, boardId));
+                .orElseThrow(() -> new UserRightsByUserIdAndBoardIdNotFoundException(userId, boardId));
+
+        if (userEntitlement.getEntitlement().equals(EntitlementEnum.OWNER)) {
+            throw new UserAccessDeniedException(ownerId);
+        }
 
         user.getEntitlements().remove(userEntitlement);
 
@@ -136,13 +161,15 @@ public class BoardServiceImpl implements BoardService {
     }
 
     /**
-     * Обновляет Board на основе DTO объекта.
+     * Обновляет доску на основе DTO объекта.
+     * Обновить доску могут только пользователи с правами OWNER в этой доске.
      *
      * @param boardId  Id сущности в формате UUID.
      * @param boardDto DTO объект содержащий информацию об обновлённой Доске.
-     * @return DTO объект BoardResponseDto новой сущности Board.
-     * @throws BoardNotFoundByIdException В случае если сущность не найдена.
-     *                                    Сообщение: "Доска задач с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @return DTO объект новой доски.
+     * @throws BoardByIdNotFoundException                    В случае если доска не найдена.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если владельцу запроса отказано в доступе к изменению прав.
      */
     @Override
     public BoardResponseDto updateBoardById(UUID userId, UUID boardId, BoardDto boardDto) {
@@ -154,7 +181,7 @@ public class BoardServiceImpl implements BoardService {
         }
 
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+                .orElseThrow(() -> new BoardByIdNotFoundException(boardId));
 
         if (boardDto.getName() != null) {
             board.setName(boardDto.getName());
@@ -166,11 +193,14 @@ public class BoardServiceImpl implements BoardService {
     }
 
     /**
-     * Удаляет сущность по Id. Также удаляет все связанные сущности эпиков и задач.
+     * Удаляет доску по Id. Также удаляет все связанные сущности.
+     * Удалить доску могут только пользователи с права OWNER.
      *
-     * @param boardId Id в формате UUID.
-     * @throws BoardNotFoundByIdException В случае если сущность не найдена.
-     *                                    Сообщение: "Доска задач с ID: '%s' не найден.". Обработка в ErrorHandler.
+     * @param userId  Id владельца запроса в формате UUID.
+     * @param boardId Id доски в формате UUID.
+     * @throws BoardByIdNotFoundException                    В случае если доска не найдена.
+     * @throws UserRightsByUserIdAndBoardIdNotFoundException если права пользователя в доске не найдены.
+     * @throws UserAccessDeniedException                     если владельцу запроса отказано в доступе к изменению прав.
      */
     @Override
     public void deleteBoardById(UUID userId, UUID boardId) {
@@ -182,7 +212,7 @@ public class BoardServiceImpl implements BoardService {
         }
 
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+                .orElseThrow(() -> new BoardByIdNotFoundException(boardId));
 
         Set<Epic> epics = board.getEpics();
 

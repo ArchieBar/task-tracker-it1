@@ -83,4 +83,13 @@ public class Epic {
             activity.add(comment);
         }
     }
+
+    public void addUser(User user) {
+        if (users != null) {
+            users.add(user);
+        } else {
+            this.users = new HashSet<>();
+            users.add(user);
+        }
+    }
 }

@@ -2,7 +2,7 @@ package ru.itone.model.epic.comment;
 
 import ru.itone.model.epic.comment.dto.CommentResponseDto;
 import ru.itone.model.user.UserMapper;
-import ru.itone.model.user.dto.AuthorCommentDto;
+import ru.itone.model.user.dto.UserFullNameAndEmailDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +19,7 @@ public class CommentMapper {
 
         commentResponseDto.setCreatedTime(comment.getCreatedTime());
 
-        AuthorCommentDto user = UserMapper.toAuthorCommentDto(comment.getAuthor());
+        UserFullNameAndEmailDto user = UserMapper.toUserFullNameAndEmailDto(comment.getAuthor());
         commentResponseDto.setAuthor(user);
 
         return commentResponseDto;

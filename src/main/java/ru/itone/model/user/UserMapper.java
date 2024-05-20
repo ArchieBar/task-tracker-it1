@@ -1,6 +1,6 @@
 package ru.itone.model.user;
 
-import ru.itone.model.user.dto.AuthorCommentDto;
+import ru.itone.model.user.dto.UserFullNameAndEmailDto;
 import ru.itone.model.user.dto.UserResponseDto;
 
 import java.util.List;
@@ -22,10 +22,16 @@ public class UserMapper {
                 .collect(Collectors.toList());
     }
 
-    public static AuthorCommentDto toAuthorCommentDto(User user) {
-        return new AuthorCommentDto(
+    public static UserFullNameAndEmailDto toUserFullNameAndEmailDto(User user) {
+        return new UserFullNameAndEmailDto(
                 user.getFirstName() + " " + user.getLastName(),
                 user.getEmail()
         );
+    }
+
+    public static List<UserFullNameAndEmailDto> toUserFullNameAndEmailDtoList(Set<User> users) {
+        return users.stream()
+                .map(UserMapper::toUserFullNameAndEmailDto)
+                .collect(Collectors.toList());
     }
 }

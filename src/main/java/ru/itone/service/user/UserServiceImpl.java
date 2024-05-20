@@ -2,7 +2,7 @@ package ru.itone.service.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.itone.exception.board.BoardNotFoundByIdException;
+import ru.itone.exception.board.BoardByIdNotFoundException;
 import ru.itone.exception.user.*;
 import ru.itone.model.board.Board;
 import ru.itone.model.board.BoardMapper;
@@ -35,13 +35,11 @@ public class UserServiceImpl implements UserService {
     private final CommentRepository commentRepository;
 
     /**
-     * Находит пользователя по его идентификатору.
+     * Находит пользователя по его Id.
      *
-     * @param userId идентификатор пользователя, которого нужно найти.
-     * @return UserResponseDto объект, содержащий информацию о пользователе:
-     * {UUID id, String fullName, String email, Set epics}
-     * @throws UserByIdNotFoundException если пользователь с указанным идентификатором не найден.
-     *                                   Сообщение: "Пользователь с ID: {0} не найден.". HTTP Code: 404
+     * @param userId Id пользователя.
+     * @return DTO объект пользователя
+     * @throws UserByIdNotFoundException если пользователь не найден.
      */
     @Override
     public UserResponseDto findUserById(UUID userId) {
@@ -51,6 +49,12 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserResponseDto(user);
     }
 
+    /**
+     * Находит все приглашения пользователя.
+     *
+     * @param userId Id владельца запроса.
+     * @return DTO список досок в которые приглашен пользователь.
+     */
     @Override
     public List<BoardResponseDto> findInviteByUser(UUID userId) {
         List<Invite> invitations = inviteRepository.findAllByUserIdAndConfirmed(userId, false);
@@ -62,22 +66,29 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * Создаёт нового пользователя на основе DTO объекта. Id генерируется автоматически на уровне бд.
+     * Регистрирует нового пользователя на основе DTO объекта.
      *
-     * @param dto DTO объект содержащий информацию о новом пользователе:
-     *            {String firstName, String lastName, String email, String password}.
-     * @return UserResponseDto объект, содержащий информацию о пользователе:
-     * {UUID id, String fullName, String email, Set epics}
+     * @param registerFormDto DTO объект содержащий информацию о новом пользователе
+     * @return DTO объект нового пользователя.
      */
     @Override
-    public UserResponseDto registerUser(RegisterFormDto dto) {
-        User user = new User(dto);
+    public UserResponseDto registerUser(RegisterFormDto registerFormDto) {
+        User user = new User(registerFormDto);
 
         userRepository.save(user);
 
         return UserMapper.toUserResponseDto(user);
     }
 
+    /**
+     * Производит вход в систему по почте и паролю пользователя.
+     *
+     * @param loginFormDto DTO объект содержащий почту и пароль пользователя.
+     * @return DTO объект пользователя.
+     * @throws UserByEmailNotFoundException       если пользователь не найден по почте.
+     * @throws UserInvalidPassword                если пароль не верен.
+     * @throws UserLoginHasBeenCompletedException если пользователь уже вошел в систему ранее.
+     */
     @Override
     public UserResponseDto login(LoginFormDto loginFormDto) {
         User user = userRepository.findByEmail(loginFormDto.getEmail())
@@ -97,6 +108,13 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserResponseDto(user);
     }
 
+    /**
+     * Позволяет пользователю выйти из системы.
+     *
+     * @param userId Id владельца запроса.
+     * @return DTO объект пользователя.
+     * @throws UserByIdNotFoundException если пользователь не найден.
+     */
     @Override
     public UserResponseDto logout(UUID userId) {
         User user = userRepository.findById(userId)
@@ -108,6 +126,16 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserResponseDto(user);
     }
 
+
+    /**
+     * Позволяет пользователю подтвердить приглашение в доску.
+     *
+     * @param userId  Id владельца запроса.
+     * @param boardId Id доски в которую необходимо принять приглашение.
+     * @throws InviteByUserIdAndBoardIdNotFoundException если приглашение не найдено.
+     * @throws UserByIdNotFoundException                 если пользователь не найден.
+     * @throws BoardByIdNotFoundException                если доска не найдена.
+     */
     @Override
     public void confirmInvite(UUID userId, UUID boardId) {
         Invite invite = inviteRepository.findByUserIdAndBoardId(userId, boardId)
@@ -117,7 +145,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserByIdNotFoundException(userId));
 
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundByIdException(boardId));
+                .orElseThrow(() -> new BoardByIdNotFoundException(boardId));
 
         invite.setConfirmed(true);
         inviteRepository.save(invite);
@@ -132,18 +160,12 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * Обновляет существующего пользователя по идентификатору,
-     * в случае, если сущность не найдена - выбрасывает исключение.
+     * Обновляет существующего пользователя по Id.
      *
-     * @param userId  идентификатор пользователя, которого нужно обновить.
+     * @param userId  Id владельца запроса.
      * @param userDto DTO объект содержащий информацию об обновлённом пользователе:
-     *                {String firstName, String lastName, String email}, поля могут быть равны 'null',
-     *                обновляются только те поля у основной сущности, которые у DTO объекта прошли валидацию
-     *                и не равны 'null'.
-     * @return UserResponseDto объект, содержащий информацию о пользователе:
-     * {UUID id, String fullName, String email, Set epics}
-     * @throws UserByIdNotFoundException если пользователь с указанным идентификатором не найден.
-     *                                   Сообщение: "Пользователь с ID: {0} не найден.". HTTP Code: 40
+     * @return DTO объект обновлённого пользователя
+     * @throws UserByIdNotFoundException если пользователь не найден.
      */
     @Override
     public UserResponseDto updateUserById(UUID userId, UserDto userDto) {
@@ -167,9 +189,16 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * Удаляет пользователя по его идентификатор
+     * Удаляет пользователя по его Id.
+     * Так же проверят, является ли пользователем владельцем какой-либо доски,
+     * если является то, производит передачу прав OWNER случайному пользователю с правами ADMIN в этой доске,
+     * если пользователь с указанными правами не найден, то передаёт права случайному пользователю с правами EDITOR,
+     * если пользователь с указанными правами не найден, то передаёт права случайному пользователю с правами USER,
+     * если пользователь с указанными правами не найден, то удаляет доску и все связанные с ней сущности.
      *
-     * @param userId идентификатор пользователя, которого нужно удалить.
+     * @param userId Id владельца запроса.
+     * @throws UserByIdNotFoundException  если пользователь не найден.
+     * @throws BoardByIdNotFoundException если доска не найдена.
      */
     @Override
     public void deleteUserById(UUID userId) {
@@ -190,7 +219,7 @@ public class UserServiceImpl implements UserService {
                     entitlementRepository.findAllByBoardId(entitlementThisUser.getBoard().getId());
 
             Board board = boardRepository.findById(entitlementThisUser.getBoard().getId())
-                    .orElseThrow(() -> new BoardNotFoundByIdException(entitlementThisUser.getBoard().getId()));
+                    .orElseThrow(() -> new BoardByIdNotFoundException(entitlementThisUser.getBoard().getId()));
             board.getUsers().remove(user);
             boardRepository.save(board);
 

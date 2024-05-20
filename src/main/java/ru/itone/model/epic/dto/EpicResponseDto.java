@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.itone.model.epic.comment.dto.CommentResponseDto;
 import ru.itone.model.task.dto.TaskResponseDto;
-import ru.itone.model.user.dto.UserResponseDto;
+import ru.itone.model.user.dto.UserFullNameAndEmailDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,5 +23,5 @@ public class EpicResponseDto {
     private LocalDateTime endTime;
     private List<TaskResponseDto> tasks;
     private List<CommentResponseDto> activity;
-    private List<UserResponseDto> users;
+    private List<UserFullNameAndEmailDto> users;
 }
