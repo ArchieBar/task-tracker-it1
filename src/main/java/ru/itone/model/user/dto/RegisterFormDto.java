@@ -1,5 +1,6 @@
 package ru.itone.model.user.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +8,7 @@ import javax.validation.constraints.*;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class RegisterFormDto {
     @NotNull(message = "Имя не может пыть пустым или состоять только из пробелов.")
     @Pattern(

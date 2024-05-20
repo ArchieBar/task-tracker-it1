@@ -2,6 +2,8 @@ package ru.itone.model.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.itone.model.Marker;
 
 import javax.validation.constraints.Email;
@@ -9,7 +11,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class UserDto {
     @NotNull(

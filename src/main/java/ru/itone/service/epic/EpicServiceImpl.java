@@ -296,9 +296,11 @@ public class EpicServiceImpl implements EpicService {
 
         Set<Task> tasks = epic.getTasks();
 
+        List<Comment> comments = epic.getActivity();
+
         board.getEpics().remove(epic);
         boardRepository.save(board);
-
+        commentRepository.deleteAll(comments);
         taskRepository.deleteAll(tasks);
         epicRepository.deleteById(epicId);
     }

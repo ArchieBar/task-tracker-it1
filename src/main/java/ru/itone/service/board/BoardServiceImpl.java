@@ -194,7 +194,7 @@ public class BoardServiceImpl implements BoardService {
 
     /**
      * Удаляет доску по Id. Также удаляет все связанные сущности.
-     * Удалить доску могут только пользователи с права OWNER.
+     * Удалить доску могут только пользователи с правами OWNER.
      *
      * @param userId  Id владельца запроса в формате UUID.
      * @param boardId Id доски в формате UUID.

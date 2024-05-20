@@ -1,15 +1,14 @@
 package ru.itone.model.board.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.itone.model.epic.dto.EpicResponseDto;
 import ru.itone.model.user.dto.UserResponseDto;
 
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardResponseDto {

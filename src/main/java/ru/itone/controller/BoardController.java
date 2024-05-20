@@ -57,7 +57,8 @@ public class BoardController {
 
     @PatchMapping("/{boardId}/invite/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public String inviteUser(@RequestHeader("X-User-Id") UUID owner, @PathVariable UUID boardId,
+    public String inviteUser(@RequestHeader("X-User-Id") UUID owner,
+                             @PathVariable UUID boardId,
                              @PathVariable UUID userId) {
         log.info("Вызов PATCH-операции: /board/{boardId}/invite/{userId}");
         boardService.inviteUser(owner, boardId, userId);
@@ -71,7 +72,7 @@ public class BoardController {
                                    @PathVariable UUID userId,
                                    @PathParam("entitlement") EntitlementEnum entitlement) {
         log.info("Вызов PATCH-операции: /board/{boardId}/issueLicense/{userId}");
-
+        boardService.issueEntitlement(ownerId, boardId, userId, entitlement);
         return "Права пользователя обновлены.";
     }
 

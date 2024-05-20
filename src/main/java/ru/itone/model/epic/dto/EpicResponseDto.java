@@ -1,8 +1,6 @@
 package ru.itone.model.epic.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.itone.model.epic.comment.dto.CommentResponseDto;
 import ru.itone.model.task.dto.TaskResponseDto;
 import ru.itone.model.user.dto.UserFullNameAndEmailDto;
@@ -11,7 +9,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class EpicResponseDto {

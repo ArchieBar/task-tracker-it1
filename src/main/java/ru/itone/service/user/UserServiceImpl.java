@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto registerUser(RegisterFormDto registerFormDto) {
         User user = new User(registerFormDto);
 
-        userRepository.save(user);
+        user = userRepository.save(user);
 
         return UserMapper.toUserResponseDto(user);
     }

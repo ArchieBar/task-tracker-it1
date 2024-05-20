@@ -54,18 +54,6 @@ public class User {
     )
     private Set<Epic> epics;
 
-    public User(UserDto userDto) {
-        this.firstName = userDto.getFirstName().substring(0, 1).toUpperCase() +
-                userDto.getFirstName().substring(1).toLowerCase();
-
-        this.lastName = userDto.getLastName().substring(0, 1).toUpperCase() +
-                userDto.getLastName().substring(1).toLowerCase();
-
-        this.email = userDto.getEmail();
-        this.entitlements = new HashSet<>();
-        this.epics = new HashSet<>();
-    }
-
     public User(RegisterFormDto dto) {
         this.firstName = dto.getFirstName().substring(0, 1).toUpperCase() +
                 dto.getFirstName().substring(1).toLowerCase();
